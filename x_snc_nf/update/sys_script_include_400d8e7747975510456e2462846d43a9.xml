@@ -66,6 +66,9 @@ NextField.prototype = {
             case "label":
                 this.fieldData = this._buildLabel();
                 break;
+            case "annotation":
+                this.fieldData = this._buildAnnotation();
+                break;
             default:
                 this.fieldData = this._buildString();
                 break;
@@ -408,6 +411,93 @@ NextField.prototype = {
         });
     },
     /*
+	export const ANNOTATION = 'annotation';
+export const AUTO_INCREMENT = 'auto_increment';
+export const AUTO_NUMBER = 'auto_number';
+export const BOOLEAN = 'boolean';
+export const CHAR = 'char';
+export const CHOICE = 'choice';
+export const COMPOSITE_FIELD = 'composite_field';
+export const CONDITIONS = 'conditions';
+export const CSS = 'css';
+export const CURRENCY = 'currency';
+export const CURRENCY2 = 'currency2';
+export const DATE = 'glide_date';
+export const DATE_TIME = 'glide_date_time';
+export const BASIC_DATE_TIME = 'datetime';
+export const DAYS_OF_WEEK = 'days_of_week';
+export const DECIMAL = 'decimal';
+export const DOCUMENTATION_FIELD = 'documentation_field';
+export const DOCUMENT_ID = 'document_id';
+export const DOMAIN_ID = 'domain_id';
+export const DOMAIN_PATH = 'domain_path';
+export const DUE_DATE = 'due_date';
+export const DURATION = 'glide_duration';
+export const EMAIL = 'email';
+export const ENCRYPTED_TEXT = 'glide_encrypted';
+export const FIELD_LIST = 'field_list';
+export const FIELD_LOOKUP = 'field_lookup';
+export const FIELD_NAME = 'field_name';
+export const FILE_ATTACHMENT = 'file_attachment';
+export const FLOAT = 'float';
+export const GLIDE_LIST = 'glide_list';
+export const GUID = 'GUID';
+export const HTML = 'html';
+export const INPUT_GROUP = 'input_group';
+export const INTEGER = 'integer';
+export const INT = 'int';
+export const LONG = 'long';
+export const LONG_INT = 'longint';
+export const INTEGER_DATE = 'integer_date';
+export const INTEGER_TIME = 'integer_time';
+export const IP_ADDR = 'ip_addr';
+export const IP_ADDRESS = 'ip_address';
+export const JOURNAL = 'journal_input';
+export const JSON = 'json';
+export const MULTI_TWO_LINES = 'multi_two_lines';
+export const MULTI_SMALL = 'multi_small';
+export const NAME_VALUE = 'simple_name_values';
+export const OTHER_DATE = 'date';
+export const PASSWORD = 'password';
+export const PASSWORD2 = 'password2';
+export const PERCENT_COMPLETE = 'percent_complete';
+export const PHONE = 'ph_number';
+export const PHONE_NUMBER = 'phone_number';
+export const PHONE_NUMBER_E164 = 'phone_number_e164';
+export const PRICE = 'price';
+export const RADIO = 'radio';
+export const REFERENCE = 'reference';
+export const SCRIPT = 'script';
+export const SCRIPT_PLAIN = 'script_plain';
+export const SHORT_TABLE_NAME = 'short_table_name';
+export const SLUSHBUCKET = 'slushbucket';
+export const STRING = 'string';
+export const STRING_FULL_UTF8 = 'string_full_utf8';
+export const STRING_LONG = 'str_long';
+export const STRING_SHORT = 'str_short';
+export const TABLE_NAME = 'table_name';
+export const TEMPLATE_VALUE = 'template_value';
+export const TEXTAREA = 'textarea';
+export const TIME = 'glide_time';
+export const TIME_WORKED = 'timer';
+export const TRANSLATED_FIELD = 'translated_field';
+export const TRANSLATED_HTML = 'translated_html';
+export const TRANSLATED_TEXT = 'translated_text';
+export const URL = 'url';
+export const USER_IMAGE = 'user_image';
+export const UTC_TIME = 'glide_utc_time';
+export const VERSION = 'version';
+export const WIDE_TEXT = 'wide_text';
+export const WIKI_TEXT = 'wiki_text';
+export const WORKFLOW = 'workflow';
+export const USER_ROLES = 'user_roles';
+export const XML = 'xml';
+export const CONDITION_STRING = 'condition_string';
+export const ORDER_INDEX = 'order_index';
+export const HTML_SCRIPT = 'html_script';
+export const USER_INPUT = 'user_input';
+export const RELATED_TAGS = 'related_tags';
+export const EMAIL_SCRIPT = 'email_script';
           , El = "annotation"
           , zl = "auto_increment"
           , Tl = "auto_number"
@@ -494,10 +584,46 @@ NextField.prototype = {
           , ot = "html_script"
           , et = "user_input"
           , rt = "related_tags"
-          , nt = "email_script";*/
+          , nt = "email_script";
+		  const _unsupportedFieldTypes = [
+'journal_input', 'field_name', 'sysevent_name', 'script', 'email_script', 'html',
+'glide_duration', 'journal', 'translated_html', 'price', 'url', 'user_image',
+'document_id', 'collection', 'journal_list', 'domain_path', 'timer', 'conditions',
+'calendar_date_time', 'file_attachment', 'variables', 'insert_timestamp', 'template_value',
+'condition_string', 'repeat_type', 'simple_name_values', 'html_script', 'composite_name',
+'user_roles', 'json', 'short_field_name', 'repeat_count', 'script_plain', 'nl_task_int1',
+'glide_action_list', 'variable_conditions'
+];
+
+confirmed types for read-only text: annotation, string, widget, formatter
+
+other confirmed types:
+glide_date
+glide_date_time
+date
+datetime
+due_date
+choice
+multiple_choice
+reference
+glide_list
+string
+integer
+long
+decimal
+float
+numeric
+boolean
+currency
+currency2
+json
+
+simple_name_values ******
+
+		  */
 
     _buildLabel: function() {
-        return this._buildFieldWithCommon({
+        return {
             name: this.name,
             label: this.label,
             type: "string", //"documentation_field",///container? xml? formatter? annotation?
@@ -511,14 +637,38 @@ NextField.prototype = {
             canCreate: false,
             canRead: true,
 
+			text: this._getOption("displayValue", ""),
+			
             // Rendering
             value: this._getOption("value", ""),
             displayValue: this._getOption("displayValue", ""),
+            //defer: false,
+
+            // Explicitly opt out of data handling
+            isDataField: false
+        };
+    },
+
+    _buildAnnotation: function() {
+        return {
+            name: this.name,
+            type: "annotation", //"documentation_field",///container? xml? formatter? annotation?
+            internalType: "annotation",
+
+            // UI behavior
+            visible: true,
+            readonly: true,
+            mandatory: false,
+            canWrite: false,
+            canCreate: false,
+            canRead: true,
+			text: this._getOption("displayValue", ""),
+            // Rendering
             defer: false,
 
             // Explicitly opt out of data handling
             isDataField: false
-        });
+        };
     },
 
     _buildFieldWithCommon: function(obj) {
@@ -569,13 +719,13 @@ NextField.prototype = {
         <sys_created_by>dylan.lindgren</sys_created_by>
         <sys_created_on>2022-11-28 07:11:54</sys_created_on>
         <sys_id>400d8e7747975510456e2462846d43a9</sys_id>
-        <sys_mod_count>55</sys_mod_count>
+        <sys_mod_count>70</sys_mod_count>
         <sys_name>NextField</sys_name>
         <sys_package display_value="NextForm" source="x_snc_nf">d3a2faa487971110e942a9773cbb3537</sys_package>
         <sys_policy>read</sys_policy>
         <sys_scope display_value="NextForm">d3a2faa487971110e942a9773cbb3537</sys_scope>
         <sys_update_name>sys_script_include_400d8e7747975510456e2462846d43a9</sys_update_name>
         <sys_updated_by>admin</sys_updated_by>
-        <sys_updated_on>2026-04-06 18:54:17</sys_updated_on>
+        <sys_updated_on>2026-04-07 16:14:05</sys_updated_on>
     </sys_script_include>
 </record_update>
