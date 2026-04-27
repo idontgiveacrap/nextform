@@ -5,7 +5,7 @@
         <macroponent display_value="NextForm">2fd4b4218753d110e942a9773cbb35a5</macroponent>
         <name>Set Field Value</name>
         <preset/>
-        <required_translations/>
+        <required_translations>[]</required_translations>
         <script><![CDATA[/**
  * @param {params} params
  * @param {api} params.api
@@ -13,32 +13,48 @@
  * @param {any} params.imports
  * @param {ApiHelpers} params.helpers
  */
-function handler({ api, event, helpers, imports }) {
+function handler({
+    api,
+    event,
+    helpers,
+    imports
+}) {
 
     api.emit('CTRL_NEXTFORM#FIELD_VALUE_CHANGED');
-
-    var newFields = JSON.parse(JSON.stringify(api.state.fields));
-    newFields[event.payload.fieldName].value = event.payload.value;
-    newFields[event.payload.fieldName].displayValue = event.payload.displayValue;
+    //used deep clone before. I think that's unneccessary
+    const name = event.payload.fieldName;
+    const prev = api.state.fields[name];
+    if (prev === undefined) {
+        console.warn("Set Field Value: issue with payload");
+        return;
+    }
+    const newFields = {
+        ...api.state.fields,
+        [name]: {
+            ...prev,
+            value: event.payload.value,
+            displayValue: event.payload.displayValue,
+        },
+    };
     api.setState('fields', newFields);
 
-    var newData = JSON.parse(JSON.stringify(api.state.nextFormData));
-    newData.fields = JSON.parse(JSON.stringify(newFields));
-    api.setState('nextFormData', newData);
+    api.setState('nextFormData', { ...api.state.nextFormData,
+        fields: newFields
+    });
 }]]></script>
         <script_api_version>2.0.0</script_api_version>
         <sys_class_name>sys_ux_client_script</sys_class_name>
         <sys_created_by>dylan.lindgren</sys_created_by>
         <sys_created_on>2022-11-22 08:22:12</sys_created_on>
         <sys_id>53736ff187571110e942a9773cbb35c0</sys_id>
-        <sys_mod_count>23</sys_mod_count>
+        <sys_mod_count>24</sys_mod_count>
         <sys_name>Set Field Value</sys_name>
         <sys_package display_value="NextForm" source="x_snc_nf">d3a2faa487971110e942a9773cbb3537</sys_package>
         <sys_policy/>
         <sys_scope display_value="NextForm">d3a2faa487971110e942a9773cbb3537</sys_scope>
         <sys_update_name>sys_ux_client_script_53736ff187571110e942a9773cbb35c0</sys_update_name>
-        <sys_updated_by>dylan.lindgren</sys_updated_by>
-        <sys_updated_on>2022-11-29 07:13:54</sys_updated_on>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2026-04-27 16:23:29</sys_updated_on>
         <target>macroponent</target>
         <type>default</type>
     </sys_ux_client_script>
