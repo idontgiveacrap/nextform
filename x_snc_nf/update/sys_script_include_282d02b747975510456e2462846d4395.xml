@@ -45,10 +45,6 @@ NextForm.prototype = {
     },
 
     addField: function(field) {
-<<<<<<< HEAD
-=======
-        field.toJSON();
->>>>>>> b9ba482 (Copilot bugfixes)
         this.fields.push(field);
         if (this.screens.length === 0) {
             this.addScreen();
