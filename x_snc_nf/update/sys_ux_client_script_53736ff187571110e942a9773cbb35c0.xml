@@ -18,7 +18,7 @@ function handler({ api, event, helpers, imports }) {
     var nf = imports['x_snc_nf.NextFormUtil']();
     api.emit('CTRL_NEXTFORM#FIELD_VALUE_CHANGED');
 
-    var fieldName = event.payload.fieldName;
+    const fieldName = event.payload.fieldName;
     var prev = api.state.fields[fieldName];
     if (!prev) {
         return;
@@ -28,26 +28,26 @@ function handler({ api, event, helpers, imports }) {
         value: event.payload.value,
         displayValue: event.payload.displayValue
     });
-    var newFields = Object.assign({}, api.state.fields);
+    const newFields = Object.assign({}, api.state.fields);
     newFields[fieldName] = updatedField;
     api.setState('fields', newFields);
-    var vr = nf.validateAllFields(newFields, api.emit);
-    var onLast = api.state.currentScreenNumber === api.state.screenCount;
-    api.setState('canProcess', onLast && !api.state.isProcessed && vr.allOk);
+    const vr = nf.validateField(updatedField);
+    const onLast = api.state.currentScreenNumber === api.state.screenCount;
+    api.setState('canProcess', onLast && !api.state.isProcessed && vr);
 }]]></script>
         <script_api_version>2.0.0</script_api_version>
         <sys_class_name>sys_ux_client_script</sys_class_name>
         <sys_created_by>dylan.lindgren</sys_created_by>
         <sys_created_on>2022-11-22 08:22:12</sys_created_on>
         <sys_id>53736ff187571110e942a9773cbb35c0</sys_id>
-        <sys_mod_count>28</sys_mod_count>
+        <sys_mod_count>30</sys_mod_count>
         <sys_name>Set Field Value</sys_name>
         <sys_package display_value="NextForm" source="x_snc_nf">d3a2faa487971110e942a9773cbb3537</sys_package>
         <sys_policy/>
         <sys_scope display_value="NextForm">d3a2faa487971110e942a9773cbb3537</sys_scope>
         <sys_update_name>sys_ux_client_script_53736ff187571110e942a9773cbb35c0</sys_update_name>
         <sys_updated_by>admin</sys_updated_by>
-        <sys_updated_on>2026-05-05 20:53:32</sys_updated_on>
+        <sys_updated_on>2026-05-05 22:05:23</sys_updated_on>
         <target>macroponent</target>
         <type>default</type>
     </sys_ux_client_script>

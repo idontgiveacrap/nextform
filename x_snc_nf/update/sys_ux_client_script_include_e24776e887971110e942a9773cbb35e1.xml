@@ -11,8 +11,8 @@
         return field.isDataField !== false;
     }
 
-    function validateField(field, api) {
-        fieldErrorMessage(api, field.name, null); //clear any existing message
+    function validateField(field) {
+        fieldErrorMessage(field, null); //clear any existing message
         if (!isDataField(field)) {
             return true;
         }
@@ -30,7 +30,7 @@
         // Mandatory check (fail fast)
         if (strVal === null) {
             if (rule.mandatory === true) {
-                fieldErrorMessage(api, field.name, 'Field is mandatory');
+                fieldErrorMessage(field, 'Field is mandatory');
                 return false;
             }
             return true;
@@ -41,25 +41,25 @@
         switch (type) {
             case 'integer':
                 if (!/^-?\d+$/.test(strVal)) {
-                    fieldErrorMessage(api, field.name, 'Value must be an integer');
+                    fieldErrorMessage(field, 'Value must be an integer');
                     return false;
                 }
                 break;
             case 'decimal':
                 if (!/^-?\d+(\.\d+)?$/.test(strVal)) {
-                    fieldErrorMessage(api, field.name, 'Value must be a number');
+                    fieldErrorMessage(field, 'Value must be a number');
                     return false;
                 }
                 break;
             case 'boolean':
                 if (['true', 'false', '1', '0', 'y', 'n'].indexOf(strVal.toLowerCase()) === -1) {
-                    fieldErrorMessage(api, field.name, 'Value must be a boolean');
+                    fieldErrorMessage(field, 'Value must be a boolean');
                     return false;
                 }
                 return true; // nothing else applies
             case 'date':
                 if (isNaN(new Date(strVal).getTime())) { ///verify this works well with SN
-                    fieldErrorMessage(api, field.name, 'Value must be a valid date');
+                    fieldErrorMessage(field, 'Value must be a valid date');
                     return false;
                 }
                 checkLength = false;
@@ -75,7 +75,7 @@
         // Allowed values (fail fast)
         if (Array.isArray(rule.allowedValues) && rule.allowedValues.length) {
             if (rule.allowedValues.indexOf(strVal) === -1) {
-                fieldErrorMessage(api, field.name, 'Value not permitted');
+                fieldErrorMessage(field, 'Value not permitted');
                 return false;
             }
         }
@@ -83,11 +83,11 @@
         // Length checks (fail fast)
         if (checkLength) {
             if (strVal.length < rule.minLength) {
-                fieldErrorMessage(api, field.name, 'Must be at least ' + rule.minLength + ' characters long');
+                fieldErrorMessage(field, 'Must be at least ' + rule.minLength + ' characters long');
                 return false;
             }
             if (rule.maxLength > 0 && strVal.length > rule.maxLength) {
-                fieldErrorMessage(api, field.name, 'Exceeds maximum length: ' + rule.maxLength);
+                fieldErrorMessage(field, 'Exceeds maximum length: ' + rule.maxLength);
                 return false;
             }
         }
@@ -102,19 +102,19 @@
                 return true;
             }
             if (!rx.test(strVal)) {
-                fieldErrorMessage(api, field.name, 'Does not match regex');
+                fieldErrorMessage(field, 'Does not match regex');
                 return false;
             }
         }
         return true;
     }
 
-    function validateAllFields(fields, api) {
+    function validateAllFields(fields) {
         const out = {};
         let allOk = true;
         Object.keys(fields).forEach(function (key) {
             const field = fields[key];
-            const result = validateField(field, api);
+            const result = validateField(field);
             if (!result) {
                 allOk = false;
             }
@@ -128,24 +128,27 @@
      *   SHOW: NOW_RECORD_FORM_SECTION_COLUMN_LAYOUT#SHOW_FIELD_MESSAGE  payload: fieldName, type, message
      *   HIDE: NOW_RECORD_FORM_SECTION_COLUMN_LAYOUT#HIDE_FIELD_MESSAGE  payload: fieldName, clearAll
      */
-    function fieldErrorMessage(api, fieldName, message) {
-        if (!api || typeof api !== 'function') {
-            return;
-        }
+    function fieldErrorMessage(field, message) {
         const SHOW_EVENT = 'sn_now_record_form.NOW_RECORD_FORM_SECTION_COLUMN_LAYOUT#SHOW_FIELD_MESSAGE';
         const HIDE_EVENT = 'sn_now_record_form.NOW_RECORD_FORM_SECTION_COLUMN_LAYOUT#HIDE_FIELD_MESSAGE';
-
         if (message) {
-            api(SHOW_EVENT, {
-                fieldName: fieldName,
-                type: 'error',
-                message: message
-            });
+        field.messages = [
+            {
+                "message": message,
+                "type": "error"
+            }
+        ]
+            //api.emit(SHOW_EVENT, {
+            //    fieldName: field.name,
+            //    type: 'error',
+            //    message: message
+            //});
         } else {
-            api(HIDE_EVENT, {
-                fieldName: fieldName,
-                clearAll: false
-            });
+            //api.emit(HIDE_EVENT, {
+            //    fieldName: field.name,
+            //    clearAll: false
+            //});
+            delete field.messages;
         }
     }
 
@@ -159,13 +162,13 @@
         <sys_created_by>dylan.lindgren</sys_created_by>
         <sys_created_on>2022-11-18 07:56:12</sys_created_on>
         <sys_id>e24776e887971110e942a9773cbb35e1</sys_id>
-        <sys_mod_count>6</sys_mod_count>
+        <sys_mod_count>11</sys_mod_count>
         <sys_name>NextFormUtil</sys_name>
         <sys_package display_value="NextForm" source="x_snc_nf">d3a2faa487971110e942a9773cbb3537</sys_package>
         <sys_policy/>
         <sys_scope display_value="NextForm">d3a2faa487971110e942a9773cbb3537</sys_scope>
         <sys_update_name>sys_ux_client_script_include_e24776e887971110e942a9773cbb35e1</sys_update_name>
         <sys_updated_by>admin</sys_updated_by>
-        <sys_updated_on>2026-05-05 20:53:27</sys_updated_on>
+        <sys_updated_on>2026-05-05 22:01:23</sys_updated_on>
     </sys_ux_client_script_include>
 </record_update>
