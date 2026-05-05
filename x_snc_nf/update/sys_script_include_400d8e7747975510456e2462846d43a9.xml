@@ -23,8 +23,7 @@ NextField.prototype = {
         this.name = name;
         this.options = options || {};
 
-
-        this.options.nfValidation = this._normalizeNfValidationForClient(this.options.nfValidation);
+        this._normalizeNfValidationForClient();
 
         switch (this.fieldType) {
             case "string":
@@ -678,45 +677,49 @@ simple_name_values ******
      * Pass as options.nfValidation — only JSON-safe fields are copied.
      * Use regexPattern (string); compiled RegExp objects are not serialized to the client.
      */
-    _normalizeNfValidationForClient: function(nv) {
+    _normalizeNfValidationForClient: function() {
         var o = {};
-        if (!nv || typeof nv !== 'object') {
-            return o;
+        const validationRule = this.options.nfValidation;
+        if (!validationRule || typeof validationRule !== 'object') {
+            this.options.nfValidation = o;
+            return;
         }
-        if (nv.readOnly === true || nv.readOnly === 'true') {
-            return {
+        if (validationRule.readOnly === true || (validationRule.readOnly + '') === 'true') {
+            this.options.nfValidation = {
                 readOnly: true,
                 readonly: true
             };
+            return;
         }
         o.readOnly = false;
-        if (Array.isArray(nv.allowedValues)) {
-            o.allowedValues = nv.allowedValues;
+        o.readonly = false;
+        if (Array.isArray(validationRule.allowedValues)) {
+            o.allowedValues = validationRule.allowedValues;
         }
-        if (!gs.nil(nv.maxLength)) {
-            var ml = parseInt(nv.maxLength, 10);
+        if (!gs.nil(validationRule.maxLength)) {
+            var ml = parseInt(validationRule.maxLength, 10);
             if (!isNaN(ml)) {
                 o.maxLength = ml;
             }
         }
-        if (!gs.nil(nv.minLength)) {
-            var nl = parseInt(nv.minLength, 10);
+        if (!gs.nil(validationRule.minLength)) {
+            var nl = parseInt(validationRule.minLength, 10);
             if (!isNaN(nl)) {
                 o.minLength = nl;
             }
         }
-        o.mandatory = nv.mandatory === true || nv.mandatory === 'true';
-        if (nv.type) {
-            o.type = String(nv.type).toLowerCase();
+        o.mandatory = validationRule.mandatory === true || (validationRule.mandatory+'') === 'true';
+        if (validationRule.type) {
+            o.type = String(validationRule.type).toLowerCase();
         }
-        if (typeof nv.regexPattern === 'string' && nv.regexPattern.length) {
-            o.regexPattern = nv.regexPattern;
+        if (typeof validationRule.regexPattern === 'string' && validationRule.regexPattern.length) {
+            o.regexPattern = validationRule.regexPattern;
         }
-        return o;
+        this.options.nfValidation = o;
     },
 
     _buildFieldWithCommon: function(obj) {
-        const readOnly = this._getOption('readOnly', false);
+        const readOnly = this._getOption('readonly', false);
         const field = Object.assign({
             "name": this.name,
             "label": this.label,
@@ -729,7 +732,7 @@ simple_name_values ******
             "sys_readonly": this._getOption('sys_readonly', readOnly),
             "canWrite": !readOnly,
             "canRead": true,
-            "canCreate": true,
+            "canCreate": !readOnly,
             "fieldHint": this._getOption('fieldHint', null),
             "fieldLayout": this._getOption("fieldLayout", {
                 "layout": this._getOption("layout", "vertical")
@@ -776,13 +779,13 @@ simple_name_values ******
         <sys_created_by>dylan.lindgren</sys_created_by>
         <sys_created_on>2022-11-28 07:11:54</sys_created_on>
         <sys_id>400d8e7747975510456e2462846d43a9</sys_id>
-        <sys_mod_count>74</sys_mod_count>
+        <sys_mod_count>81</sys_mod_count>
         <sys_name>NextField</sys_name>
         <sys_package display_value="NextForm" source="x_snc_nf">d3a2faa487971110e942a9773cbb3537</sys_package>
         <sys_policy>read</sys_policy>
         <sys_scope display_value="NextForm">d3a2faa487971110e942a9773cbb3537</sys_scope>
         <sys_update_name>sys_script_include_400d8e7747975510456e2462846d43a9</sys_update_name>
         <sys_updated_by>admin</sys_updated_by>
-        <sys_updated_on>2026-05-01 20:56:22</sys_updated_on>
+        <sys_updated_on>2026-05-05 14:28:57</sys_updated_on>
     </sys_script_include>
 </record_update>

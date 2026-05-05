@@ -12,7 +12,7 @@
     }
 
     function nfIsFieldReadonly(field) {
-        return field.readonly === true || field.sys_readonly === true;
+        return field.readonly === true;
     }
 
     function nfValIsEmpty(field, value) {
@@ -36,65 +36,92 @@
         if (nfIsFieldReadonly(field)) {
             return { ok: true, message: null };
         }
+
         var rule = field.nfValidation || null;
-        var value = field.value;
-        var mandatory = rule ? (rule.mandatory === true) : (field.mandatory === true);
-        var empty = nfValIsEmpty(field, value);
-        if (mandatory && empty) {
-            return { ok: false, message: 'This field is required' };
-        }
-        if (empty) {
+        if (!rule) {
             return { ok: true, message: null };
         }
-        var strVal = String(value);
-        if (rule) {
-            if (rule.readOnly === true) {
-                return { ok: true, message: null };
+
+        var strVal = (field.value === null || field.value === undefined || field.value === '') ? null : String(field.value);
+
+        // Mandatory check (fail fast)
+        if (strVal === null) {
+            if (rule.mandatory === true) {
+                return { ok: false, message: 'Field is mandatory' };
             }
-            if (rule.minLength != null && !isNaN(rule.minLength)) {
-                if (strVal.length < Number(rule.minLength)) {
-                    return { ok: false, message: 'Value is too short' };
-                }
-            }
-            if (rule.maxLength != null && !isNaN(rule.maxLength)) {
-                if (strVal.length > Number(rule.maxLength)) {
-                    return { ok: false, message: 'Value is too long' };
-                }
-            }
-            if (Array.isArray(rule.allowedValues) && rule.allowedValues.length) {
-                var okAv = false;
-                for (var i = 0; i < rule.allowedValues.length; i++) {
-                    var av = rule.allowedValues[i];
-                    if (String(av) === strVal || av === value) {
-                        okAv = true;
-                        break;
-                    }
-                }
-                if (!okAv) {
-                    return { ok: false, message: 'Value is not an allowed choice' };
-                }
-            }
-            if (typeof rule.regexPattern === 'string' && rule.regexPattern.length) {
-                try {
-                    var re = new RegExp(rule.regexPattern);
-                    if (!re.test(strVal)) {
-                        return { ok: false, message: 'Value does not match the required pattern' };
-                    }
-                } catch (e0) {
-                    return { ok: false, message: 'Invalid validation pattern' };
-                }
-            }
-            var typ = (rule.type || 'string').toLowerCase();
-            if (typ === 'integer' || typ === 'int' || typ === 'long') {
+            return { ok: true, message: null };
+        }
+
+        var checkLength = true;
+        var typ = String(rule.type || '').toLowerCase();
+        switch (typ) {
+            case 'integer':
                 if (!/^-?\d+$/.test(strVal)) {
-                    return { ok: false, message: 'Enter a whole number' };
+                    return { ok: false, message: 'Value must be an integer' };
                 }
-            } else if (typ === 'decimal' || typ === 'float' || typ === 'numeric' || typ === 'currency') {
-                if (!/^-?\d+(\.\d+)?$/.test(strVal)) {
-                    return { ok: false, message: 'Enter a valid number' };
+                break;
+            case 'decimal':
+                if (!isFinite(Number(strVal))) {
+                    return { ok: false, message: 'Value must be a number' };
                 }
+                break;
+            case 'boolean':
+                if (['true', 'false', '1', '0', 'y', 'n'].indexOf(strVal.toLowerCase()) === -1) {
+                    return { ok: false, message: 'Value must be a boolean' };
+                }
+                return { ok: true, message: null }; // nothing else applies
+            case 'date':
+                if (isNaN(new Date(strVal).getTime())) {
+                    return { ok: false, message: 'Value must be a valid date' };
+                }
+                checkLength = false;
+                break;
+            case 'choice':
+                checkLength = false;
+                break;
+            default:
+                // no type enforcement
+                break;
+        }
+
+        // Allowed values (fail fast)
+        if (Array.isArray(rule.allowedValues) && rule.allowedValues.length) {
+            if (rule.allowedValues.indexOf(strVal) === -1) {
+                return { ok: false, message: 'Value is not in the list of allowed values' };
             }
         }
+
+        // Length checks (fail fast)
+        if (checkLength) {
+            if (strVal.length < rule.minLength) {
+                return { ok: false, message: 'Value is shorter than minimum length ' + rule.minLength };
+            }
+            if (rule.maxLength > 0 && strVal.length > rule.maxLength) {
+                return { ok: false, message: 'Value exceeds maximum length ' + rule.maxLength };
+            }
+        }
+
+        // Regex (final gate)
+        var rx = null;
+        if (rule.regex instanceof RegExp) {
+            rx = rule.regex;
+        } else if (typeof rule.regex === 'string' && rule.regex.length) {
+            try {
+                rx = new RegExp(rule.regex);
+            } catch (e1) {
+                return { ok: false, message: 'Value does not match regex' };
+            }
+        } else if (typeof rule.regexPattern === 'string' && rule.regexPattern.length) {
+            try {
+                rx = new RegExp(rule.regexPattern);
+            } catch (e2) {
+                return { ok: false, message: 'Value does not match regex' };
+            }
+        }
+        if (rx && !rx.test(strVal)) {
+            return { ok: false, message: 'Value does not match regex' };
+        }
+
         return { ok: true, message: null };
     }
 
@@ -109,10 +136,17 @@
             }
             var next = Object.assign({}, field);
             if (result.message) {
-                next.messages = [{ messageType: 'error', message: result.message }];
+                // sn_now_record_form expects Glide-style message entries (`type`), not only `messageType`.
+                next.messages = [{
+                    type: 'error',
+                    messageType: 'error',
+                    message: result.message
+                }];
+                next.fieldMessage = result.message;
                 next.nfValidationMessage = result.message;
             } else {
                 delete next.messages;
+                delete next.fieldMessage;
                 delete next.nfValidationMessage;
             }
             out[key] = next;
@@ -120,8 +154,58 @@
         return { fields: out, allOk: allOk };
     }
 
+    function nfGetFieldValidationErrorText(field) {
+        if (field.nfValidationMessage) {
+            return field.nfValidationMessage;
+        }
+        if (field.messages && field.messages.length) {
+            var m = field.messages[0];
+            if (m && m.message) {
+                return m.message;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * sn_now_record_form does not always render `fields[].messages` from controller state.
+     * Use the same UX events as @servicenow/now-record-form-connected (sys_ux_event export):
+     *   SHOW: NOW_RECORD_FORM_SECTION_COLUMN_LAYOUT#SHOW_FIELD_MESSAGE  payload: fieldName, type, message
+     *   HIDE: NOW_RECORD_FORM_SECTION_COLUMN_LAYOUT#HIDE_FIELD_MESSAGE  payload: fieldName, clearAll
+     * Set emitUxfRecordFormFieldMessages false to disable. Override event strings via controller props if needed.
+     */
+    function nfEmitUxfRecordFormFieldMessages(api, fieldsMap) {
+        if (!api || typeof api.emit !== 'function') {
+            return;
+        }
+        const showEvt = 'sn_now_record_form.NOW_RECORD_FORM_SECTION_COLUMN_LAYOUT#SHOW_FIELD_MESSAGE';
+        const hideEvt = 'sn_now_record_form.NOW_RECORD_FORM_SECTION_COLUMN_LAYOUT#HIDE_FIELD_MESSAGE';
+
+        Object.keys(fieldsMap).forEach(function (key) {
+            var f = fieldsMap[key];
+            if (!nfIsDataField(f)) {
+                return;
+            }
+            var name = f.name || key;
+            var err = nfGetFieldValidationErrorText(f);
+            if (err) {
+                api.emit(showEvt, {
+                    fieldName: name,
+                    type: 'error',
+                    message: err
+                });
+            } else {
+                api.emit(hideEvt, {
+                    fieldName: name,
+                    clearAll: false
+                });
+            }
+        });
+    }
+
     return {
-        nfRevalidateAllFields: nfRevalidateAllFields
+        nfRevalidateAllFields: nfRevalidateAllFields,
+        nfEmitUxfRecordFormFieldMessages: nfEmitUxfRecordFormFieldMessages
     };
 }]]></script>
         <script_api_version>2.0.0</script_api_version>
@@ -129,13 +213,13 @@
         <sys_created_by>dylan.lindgren</sys_created_by>
         <sys_created_on>2022-11-18 07:56:12</sys_created_on>
         <sys_id>e24776e887971110e942a9773cbb35e1</sys_id>
-        <sys_mod_count>1</sys_mod_count>
+        <sys_mod_count>5</sys_mod_count>
         <sys_name>NextFormUtil</sys_name>
         <sys_package display_value="NextForm" source="x_snc_nf">d3a2faa487971110e942a9773cbb3537</sys_package>
         <sys_policy/>
         <sys_scope display_value="NextForm">d3a2faa487971110e942a9773cbb3537</sys_scope>
         <sys_update_name>sys_ux_client_script_include_e24776e887971110e942a9773cbb35e1</sys_update_name>
         <sys_updated_by>admin</sys_updated_by>
-        <sys_updated_on>2026-05-04 18:09:27</sys_updated_on>
+        <sys_updated_on>2026-05-05 15:48:16</sys_updated_on>
     </sys_ux_client_script_include>
 </record_update>
