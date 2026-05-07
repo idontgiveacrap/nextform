@@ -675,7 +675,6 @@ simple_name_values ******
     /**
      * Optional generator-supplied rules for client-side validation (nfValidation).
      * Pass as options.nfValidation — only JSON-safe fields are copied.
-     * Use regexPattern (string); compiled RegExp objects are not serialized to the client.
      */
     _normalizeNfValidationForClient: function() {
         var o = {};
@@ -712,8 +711,8 @@ simple_name_values ******
         if (validationRule.type) {
             o.type = String(validationRule.type).toLowerCase();
         }
-        if (typeof validationRule.regexPattern === 'string' && validationRule.regexPattern.length) {
-            o.regexPattern = validationRule.regexPattern;
+        if (typeof validationRule.regex === 'string' && validationRule.regex.length) {
+            o.regex = validationRule.regex;
         }
         this.options.nfValidation = o;
     },
@@ -779,13 +778,13 @@ simple_name_values ******
         <sys_created_by>dylan.lindgren</sys_created_by>
         <sys_created_on>2022-11-28 07:11:54</sys_created_on>
         <sys_id>400d8e7747975510456e2462846d43a9</sys_id>
-        <sys_mod_count>81</sys_mod_count>
+        <sys_mod_count>82</sys_mod_count>
         <sys_name>NextField</sys_name>
         <sys_package display_value="NextForm" source="x_snc_nf">d3a2faa487971110e942a9773cbb3537</sys_package>
         <sys_policy>read</sys_policy>
         <sys_scope display_value="NextForm">d3a2faa487971110e942a9773cbb3537</sys_scope>
         <sys_update_name>sys_script_include_400d8e7747975510456e2462846d43a9</sys_update_name>
         <sys_updated_by>admin</sys_updated_by>
-        <sys_updated_on>2026-05-05 14:28:57</sys_updated_on>
+        <sys_updated_on>2026-05-07 18:13:52</sys_updated_on>
     </sys_script_include>
 </record_update>
