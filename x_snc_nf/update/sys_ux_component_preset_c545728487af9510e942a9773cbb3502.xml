@@ -4,147 +4,211 @@
         <controller display_value="NextForm">bc6738a18753d110e942a9773cbb3583</controller>
         <controller_dependencies/>
         <description>Display a series of ephemeral forms sequentially, based on a NextForm definition.</description>
-        <event_handlers>[&#13;
-  {&#13;
-    "eventMappingId": "cljjekoureeaaaaaaeecffyvaahxeffkph",&#13;
-    "isConfiguration": false,&#13;
-    "offRowStorageId": null,&#13;
-    "sourceEventApiName": "sn_now_record_form.NOW_RECORD_FORM_SECTION_COLUMN_LAYOUT#SET_VALUE",&#13;
-    "sourceEventCorrelationId": null,&#13;
-    "sourceEventDefinition": {&#13;
-      "apiName": "sn_now_record_form.NOW_RECORD_FORM_SECTION_COLUMN_LAYOUT#SET_VALUE",&#13;
-      "id": null,&#13;
-      "type": "UXEVENT"&#13;
-    },&#13;
-    "sourceEventSysId": null,&#13;
-    "targets": [&#13;
-      {&#13;
-        "targetId": "cljjekoureeaaaaaaffcffyvaagbbgghheaa",&#13;
-        "operation": {&#13;
-          "dataBrokerId": "bc6738a18753d110e942a9773cbb3583",&#13;
-          "operationName": "CTRL_NEXTFORM#SET_VALUE",&#13;
-          "payload": {&#13;
-            "type": "MAP_CONTAINER",&#13;
-            "container": {&#13;
-              "fieldName": {&#13;
-                "type": "EVENT_PAYLOAD_BINDING",&#13;
-                "binding": {&#13;
-                  "address": [&#13;
-                    "fieldName"&#13;
-                  ]&#13;
-                }&#13;
-              },&#13;
-              "value": {&#13;
-                "type": "EVENT_PAYLOAD_BINDING",&#13;
-                "binding": {&#13;
-                  "address": [&#13;
-                    "value"&#13;
-                  ]&#13;
-                }&#13;
-              },&#13;
-              "displayValue": {&#13;
-                "type": "EVENT_PAYLOAD_BINDING",&#13;
-                "binding": {&#13;
-                  "address": [&#13;
-                    "displayValue"&#13;
-                  ]&#13;
-                }&#13;
-              }&#13;
-            }&#13;
-          }&#13;
-        },&#13;
-        "type": "DATABROKER_OP"&#13;
-      }&#13;
-    ]&#13;
-  }&#13;
+        <event_handlers>[
+    {
+        "eventMappingId": "cljjekoureeaaaaaaeecffyvaahxeffkph",
+        "isConfiguration": false,
+        "offRowStorageId": null,
+        "sourceEventApiName": "sn_now_record_form.NOW_RECORD_FORM_SECTION_COLUMN_LAYOUT#SET_VALUE",
+        "sourceEventCorrelationId": null,
+        "sourceEventDefinition": {
+            "apiName": "sn_now_record_form.NOW_RECORD_FORM_SECTION_COLUMN_LAYOUT#SET_VALUE",
+            "id": null,
+            "type": "UXEVENT"
+        },
+        "sourceEventSysId": null,
+        "targets": [
+            {
+                "operation": {
+                    "dataBrokerId": "bc6738a18753d110e942a9773cbb3583",
+                    "operationName": "CTRL_NEXTFORM#SET_VALUE",
+                    "payload": {
+                        "container": {
+                            "displayValue": {
+                                "binding": {
+                                    "address": [
+                                        "displayValue"
+                                    ]
+                                },
+                                "type": "EVENT_PAYLOAD_BINDING"
+                            },
+                            "fieldName": {
+                                "binding": {
+                                    "address": [
+                                        "fieldName"
+                                    ]
+                                },
+                                "type": "EVENT_PAYLOAD_BINDING"
+                            },
+                            "value": {
+                                "binding": {
+                                    "address": [
+                                        "value"
+                                    ]
+                                },
+                                "type": "EVENT_PAYLOAD_BINDING"
+                            }
+                        },
+                        "type": "MAP_CONTAINER"
+                    }
+                },
+                "targetId": "cljjekoureeaaaaaaffcffyvaagbbgghheaa",
+                "type": "DATABROKER_OP"
+            }
+        ]
+    }
 ]</event_handlers>
         <hide_component/>
         <is_repeated_element>false</is_repeated_element>
         <is_repeater>false</is_repeater>
         <name>NextForm</name>
         <parent_repeater_preset/>
-        <properties>{&#13;
-  "sections": {&#13;
-    "type": "DATA_OUTPUT_BINDING",&#13;
-    "binding": {&#13;
-      "address": [&#13;
-        "currentSections"&#13;
-      ]&#13;
-    }&#13;
-  },&#13;
-  "fields": {&#13;
-    "type": "DATA_OUTPUT_BINDING",&#13;
-    "binding": {&#13;
-      "address": [&#13;
-        "fields"&#13;
-      ]&#13;
-    }&#13;
-  },&#13;
-  "table": {&#13;
-      "type" : "JSON_LITERAL",&#13;
-      "value" : null&#13;
-  },&#13;
-  "sysId": {&#13;
-      "type" : "JSON_LITERAL",&#13;
-      "value" : null&#13;
-  },&#13;
-  "view": {&#13;
-      "type" : "JSON_LITERAL",&#13;
-      "value" : null&#13;
-  },&#13;
-  "relatedLists": {&#13;
-      "type" : "JSON_LITERAL",&#13;
-      "value" : null&#13;
-  },&#13;
-  "config": {&#13;
-      "type" : "JSON_LITERAL",&#13;
-      "value" : null&#13;
-  },&#13;
-  "serializedChanges": {&#13;
-      "type" : "JSON_LITERAL",&#13;
-      "value" : null&#13;
-  },&#13;
-  "encodedRecord": {&#13;
-      "type" : "JSON_LITERAL",&#13;
-      "value" : null&#13;
-  },&#13;
-  "isNewRecord": {&#13;
-      "type" : "JSON_LITERAL",&#13;
-      "value" : true&#13;
-  },&#13;
-  "userSession": {&#13;
-    "type": "CONTEXT_BINDING",&#13;
-    "binding": {&#13;
-      "address": [&#13;
-        "user"&#13;
-      ],&#13;
-      "category": "session"&#13;
-    }&#13;
-  },&#13;
-  "formMessages": {&#13;
-      "type" : "JSON_LITERAL",&#13;
-      "value" : null&#13;
-  },&#13;
-    "isContextMenuHidden": {&#13;
-      "type" : "JSON_LITERAL",&#13;
-      "value" : true&#13;
-  },&#13;
-    "isSectionMenuHidden": {&#13;
-      "type" : "JSON_LITERAL",&#13;
-      "value" : true&#13;
-  },&#13;
-    "isSectionTitleHidden": {&#13;
-      "type" : "JSON_LITERAL",&#13;
-      "value" : true&#13;
-  },&#13;
-    "isFormOptionsHidden": {&#13;
-      "type" : "JSON_LITERAL",&#13;
-      "value" : true&#13;
-  },&#13;
-    "disableCollapse": {&#13;
-      "type" : "JSON_LITERAL",&#13;
-      "value" : true&#13;
-  }&#13;
+        <properties>{
+    "config": {
+        "type": "JSON_LITERAL",
+        "value": null
+    },
+    "disableCollapse": {
+        "type": "JSON_LITERAL",
+        "value": true
+    },
+    "enableUnsavedFieldIndicator": {
+        "type": "JSON_LITERAL",
+        "value": false
+    },
+    "encodedRecord": {
+        "type": "JSON_LITERAL",
+        "value": null
+    },
+    "fields": {
+        "binding": {
+            "address": [
+                "fields"
+            ]
+        },
+        "type": "DATA_OUTPUT_BINDING"
+    },
+    "formMessages": {
+        "type": "JSON_LITERAL",
+        "value": null
+    },
+    "inRecordPageTab": {
+        "type": "JSON_LITERAL",
+        "value": false
+    },
+    "inUiBuilder": {
+        "type": "JSON_LITERAL",
+        "value": true
+    },
+    "isContextMenuHidden": {
+        "type": "JSON_LITERAL",
+        "value": true
+    },
+    "isFieldContextMenuHidden": {
+        "type": "JSON_LITERAL",
+        "value": true
+    },
+    "isFirstSectionTitleHidden": {
+        "type": "JSON_LITERAL",
+        "value": false
+    },
+    "isFormOptionsHidden": {
+        "type": "JSON_LITERAL",
+        "value": true
+    },
+    "isNewRecord": {
+        "type": "JSON_LITERAL",
+        "value": true
+    },
+    "isRemovePaddingLeft": {
+        "type": "JSON_LITERAL",
+        "value": true
+    },
+    "isSectionMenuHidden": {
+        "type": "JSON_LITERAL",
+        "value": true
+    },
+    "isSectionTitleHidden": {
+        "type": "JSON_LITERAL",
+        "value": true
+    },
+    "isViewSectionHidden": {
+        "type": "JSON_LITERAL",
+        "value": false
+    },
+    "labelWrappingLimit": {
+        "type": "JSON_LITERAL",
+        "value": null
+    },
+    "landmark": {
+        "type": "JSON_LITERAL",
+        "value": null
+    },
+    "nowDsDomainId": {
+        "type": "JSON_LITERAL",
+        "value": ""
+    },
+    "nowDsDomainScope": {
+        "type": "JSON_LITERAL",
+        "value": ""
+    },
+    "nowDsRecordId": {
+        "type": "JSON_LITERAL",
+        "value": ""
+    },
+    "nowDsRecordTable": {
+        "type": "JSON_LITERAL",
+        "value": ""
+    },
+    "recordMembers": {
+        "type": "JSON_LITERAL",
+        "value": []
+    },
+    "relatedLists": {
+        "type": "JSON_LITERAL",
+        "value": null
+    },
+    "scrollableHost": {
+        "type": "JSON_LITERAL",
+        "value": null
+    },
+    "sectionHeadingLevel": {
+        "type": "JSON_LITERAL",
+        "value": "2"
+    },
+    "sections": {
+        "binding": {
+            "address": [
+                "currentSections"
+            ]
+        },
+        "type": "DATA_OUTPUT_BINDING"
+    },
+    "serializedChanges": {
+        "type": "JSON_LITERAL",
+        "value": null
+    },
+    "sysId": {
+        "type": "JSON_LITERAL",
+        "value": null
+    },
+    "table": {
+        "type": "JSON_LITERAL",
+        "value": null
+    },
+    "userSession": {
+        "binding": {
+            "address": [
+                "user"
+            ],
+            "category": "session"
+        },
+        "type": "CONTEXT_BINDING"
+    },
+    "view": {
+        "type": "JSON_LITERAL",
+        "value": null
+    }
 }</properties>
         <repeat_with/>
         <required_translations>[ ]</required_translations>
@@ -152,14 +216,14 @@
         <sys_created_by>dylan.lindgren</sys_created_by>
         <sys_created_on>2022-11-29 04:51:39</sys_created_on>
         <sys_id>c545728487af9510e942a9773cbb3502</sys_id>
-        <sys_mod_count>7</sys_mod_count>
+        <sys_mod_count>8</sys_mod_count>
         <sys_name>NextForm</sys_name>
         <sys_package display_value="NextForm" source="x_snc_nf">d3a2faa487971110e942a9773cbb3537</sys_package>
         <sys_policy/>
         <sys_scope display_value="NextForm">d3a2faa487971110e942a9773cbb3537</sys_scope>
         <sys_update_name>sys_ux_component_preset_c545728487af9510e942a9773cbb3502</sys_update_name>
-        <sys_updated_by>dylan.lindgren</sys_updated_by>
-        <sys_updated_on>2022-11-29 05:20:02</sys_updated_on>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2026-05-06 20:17:33</sys_updated_on>
     </sys_ux_component_preset>
     <sys_translated_text action="delete_multiple" query="documentkey=c545728487af9510e942a9773cbb3502"/>
 </record_update>
