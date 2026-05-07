@@ -42,6 +42,95 @@
                         "type": "CLIENT_SCRIPT"
                     }
                 ]
+            },
+            {
+                "eventMappingId": "eeddldccQeehhtNDEzeeddjjggeeOleeVWpUee",
+                "isConfiguration": false,
+                "offRowStorageId": null,
+                "sourceEventApiName": "sn_uxf.DATA_FETCH_INITIATED",
+                "sourceEventCorrelationId": null,
+                "sourceEventDefinition": {
+                    "apiName": "sn_uxf.DATA_FETCH_INITIATED",
+                    "id": null,
+                    "type": "UXEVENT"
+                },
+                "sourceEventSysId": null,
+                "targets": [
+                    {
+                        "broker": null,
+                        "clientScript": null,
+                        "clientTransformScript": "",
+                        "conditional": null,
+                        "declarativeAction": null,
+                        "event": {
+                            "apiName": "sn_uxf.MACROPONENT_STATE_UPDATE_REQUESTED",
+                            "payload": {
+                                "type": "JSON_LITERAL",
+                                "value": {
+                                    "propName": "isLoading",
+                                    "value": true
+                                }
+                            },
+                            "sysId": "32408b42ff7a10109046e490703bf176"
+                        },
+                        "operation": null,
+                        "targetId": "NEhhEYPYOCUWQjjiaaBGECmvDVu",
+                        "type": "EVENT"
+                    },
+                    {
+                        "broker": null,
+                        "clientScript": null,
+                        "clientTransformScript": "",
+                        "conditional": null,
+                        "declarativeAction": null,
+                        "event": {
+                            "apiName": "sn_uxf.MACROPONENT_STATE_UPDATE_REQUESTED",
+                            "payload": {
+                                "type": "JSON_LITERAL",
+                                "value": {
+                                    "propName": "isLoaded",
+                                    "value": false
+                                }
+                            },
+                            "sysId": "32408b42ff7a10109046e490703bf176"
+                        },
+                        "operation": null,
+                        "targetId": "LIacggPggZDUyMjjjwGImeehhbQGxS",
+                        "type": "EVENT"
+                    }
+                ]
+            },
+            {
+                "eventMappingId": "CAQzNeehhkffDUksjjnMELuBkxWffj",
+                "isConfiguration": false,
+                "offRowStorageId": null,
+                "sourceEventApiName": "sn_uxf.DATA_FETCH_FAILED",
+                "sourceEventCorrelationId": null,
+                "sourceEventDefinition": {
+                    "apiName": "sn_uxf.DATA_FETCH_FAILED",
+                    "id": null,
+                    "type": "UXEVENT"
+                },
+                "sourceEventSysId": null,
+                "targets": [
+                    {
+                        "broker": null,
+                        "clientScript": {
+                            "payload": {
+                                "type": "JSON_LITERAL",
+                                "value": {}
+                            },
+                            "sysId": "ae52562d8757d110e942a9773cbb355a"
+                        },
+                        "clientTransformScript": "",
+                        "conditional": null,
+                        "declarativeAction": null,
+                        "event": null,
+                        "operation": null,
+                        "targetId": "tDjCnPuiiBUUAjjTwJjjqQpjTeeP",
+                        "type": "CLIENT_SCRIPT"
+                    }
+                ]
             }
         ],
         "inputValues": {
@@ -64,7 +153,7 @@
                 "type": "CONTEXT_BINDING"
             }
         },
-        "readEvaluationMode": "EAGER"
+        "readEvaluationMode": "EXPLICIT"
     },
     {
         "definition": {
@@ -128,6 +217,38 @@
                         "type": "CLIENT_SCRIPT"
                     }
                 ]
+            },
+            {
+                "eventMappingId": "xihPVfdCBUdmeeddCYMeVNbbSXjjk",
+                "isConfiguration": false,
+                "offRowStorageId": null,
+                "sourceEventApiName": "sn_uxf.DATA_OP_FAILED",
+                "sourceEventCorrelationId": null,
+                "sourceEventDefinition": {
+                    "apiName": "sn_uxf.DATA_OP_FAILED",
+                    "id": null,
+                    "type": "UXEVENT"
+                },
+                "sourceEventSysId": null,
+                "targets": [
+                    {
+                        "broker": null,
+                        "clientScript": {
+                            "payload": {
+                                "type": "JSON_LITERAL",
+                                "value": {}
+                            },
+                            "sysId": "e9982810c37cc71086f39f3ed4013185"
+                        },
+                        "clientTransformScript": "",
+                        "conditional": null,
+                        "declarativeAction": null,
+                        "event": null,
+                        "operation": null,
+                        "targetId": "PYsddSvwjAaamggjjeesHLDbbOvBcee",
+                        "type": "CLIENT_SCRIPT"
+                    }
+                ]
             }
         ],
         "inputValues": {},
@@ -136,7 +257,7 @@
 ]</data>
         <description/>
         <disable_auto_reflow>false</disable_auto_reflow>
-        <dispatched_events>c4c5d3808723d510e942a9773cbb35ed,ed375bc08723d510e942a9773cbb35ac,ad479bc08723d510e942a9773cbb35ce,38871fc08723d510e942a9773cbb35b3</dispatched_events>
+        <dispatched_events>c4c5d3808723d510e942a9773cbb35ed,ed375bc08723d510e942a9773cbb35ac,ad479bc08723d510e942a9773cbb35ce,38871fc08723d510e942a9773cbb35b3,69982810c37cc71086f39f3ed4013185,a9982810c37cc71086f39f3ed4013185</dispatched_events>
         <ext_controller_dep/>
         <extends/>
         <extension_point/>
@@ -232,15 +353,22 @@
     "x_snc_nf.CTRL_NEXTFORM#RELOAD": [
         {
             "broker": null,
-            "clientScript": {
-                "sysId": "dc4f4e698757d110e942a9773cbb351d"
-            },
+            "clientScript": null,
+            "clientTransformScript": "",
             "conditional": null,
             "declarativeAction": null,
             "event": null,
-            "operation": null,
-            "targetId": "claqdggaaaeeaaccjpddbhhsddakmddkhw",
-            "type": "CLIENT_SCRIPT"
+            "operation": {
+                "dataBrokerId": "f953f22887971110e942a9773cbb3528",
+                "operationName": "REFRESH",
+                "parentResourceId": "get_nextform_object",
+                "payload": {
+                    "type": "JSON_LITERAL",
+                    "value": {}
+                }
+            },
+            "targetId": "eehhxccYJvGIDkjjcjjRcPTfCaaYjjaam",
+            "type": "DATABROKER_OP"
         }
     ],
     "x_snc_nf.CTRL_NEXTFORM#SET_VALUE": [
@@ -419,18 +547,14 @@
     },
     {
         "defaultValue": {},
-        "description": "To be consumed by your generator",
+        "description": "To be consumed by the generator",
         "disabled": false,
         "fieldType": "json",
         "icon": "square-curly-bracket-outline",
         "id": "formData",
-        "label": "Form data",
-        "mandatory": false,
+        "label": "Generator metadata",
         "name": "formData",
-        "readOnly": false,
-        "selectable": false,
-        "typeMetadata": {},
-        "valueType": "json"
+        "typeMetadata": {}
     },
     {
         "defaultValue": {},
@@ -439,7 +563,7 @@
         "fieldType": "json",
         "icon": "square-curly-bracket-outline",
         "id": "metadata",
-        "label": "Processor Metadata",
+        "label": "Processor metadata",
         "name": "metadata",
         "typeMetadata": {}
     },
@@ -664,14 +788,14 @@
         <sys_created_by>dylan.lindgren</sys_created_by>
         <sys_created_on>2022-11-21 01:05:01</sys_created_on>
         <sys_id>2fd4b4218753d110e942a9773cbb35a5</sys_id>
-        <sys_mod_count>30</sys_mod_count>
+        <sys_mod_count>35</sys_mod_count>
         <sys_name>NextForm</sys_name>
         <sys_package display_value="NextForm" source="x_snc_nf">d3a2faa487971110e942a9773cbb3537</sys_package>
         <sys_policy/>
         <sys_scope display_value="NextForm">d3a2faa487971110e942a9773cbb3537</sys_scope>
         <sys_update_name>sys_ux_macroponent_2fd4b4218753d110e942a9773cbb35a5</sys_update_name>
         <sys_updated_by>admin</sys_updated_by>
-        <sys_updated_on>2026-05-05 16:35:18</sys_updated_on>
+        <sys_updated_on>2026-05-07 17:44:11</sys_updated_on>
     </sys_ux_macroponent>
     <sys_translated_text action="delete_multiple" query="documentkey=2fd4b4218753d110e942a9773cbb35a5"/>
 </record_update>

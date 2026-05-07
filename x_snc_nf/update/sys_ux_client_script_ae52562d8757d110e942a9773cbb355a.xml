@@ -13,63 +13,74 @@
  * @param {any} params.imports
  * @param {ApiHelpers} params.helpers
  */
-function handler({ api, event, helpers, imports }) {
+function handler({
+    api,
+    event,
+    helpers,
+    imports
+}) {
+    const getData = api.data.get_nextform_object;
+    if (getData && getData.output && getData.output.result && getData.status !== 'error') {
 
-    const nf = imports['x_snc_nf.NextFormUtil']();
-    const nextFormData = api.data.get_nextform_object.output.result;
-    const screenData = nextFormData.screens;
-    const fieldData = nextFormData.fields || {};
-    var vr = nf.validateAllFields(fieldData);
+        const nextFormData = getData.output.result;
 
-    var screenCount = screenData.length;
-    var currentSections = screenData[0];
-    var currentScreenIndex = 0;
-    var currentScreenNumber = currentScreenIndex + 1;
+        const nf = imports['x_snc_nf.NextFormUtil']();
+        const screenData = nextFormData.screens;
+        const fieldData = nextFormData.fields || {};
+        var vr = nf.validateAllFields(fieldData);
 
-    // Keep screens (and other layout) in nextFormData; store fields only in `fields` state
-    // to avoid duplicating the full field map.
-    var layoutOnly = {};
-    Object.keys(nextFormData).forEach(function (key) {
-        if (key !== 'fields') {
-            layoutOnly[key] = nextFormData[key];
-        }
-    });
+        var screenCount = screenData.length;
+        var currentSections = screenData[0];
+        var currentScreenIndex = 0;
+        var currentScreenNumber = currentScreenIndex + 1;
 
-    api.setState('nextFormData', layoutOnly);
-    api.setState('currentScreenIndex', currentScreenIndex);
-    api.setState('currentScreenNumber', currentScreenNumber);
-    api.setState('screenCount', screenCount);
-    api.setState('currentSections', currentSections);
-    api.setState('fields', fieldData);
+        // Keep screens (and other layout) in nextFormData; store fields only in `fields` state
+        // to avoid duplicating the full field map.
+        var layoutOnly = {};
+        Object.keys(nextFormData).forEach(function(key) {
+            if (key !== 'fields') {
+                layoutOnly[key] = nextFormData[key];
+            }
+        });
 
-    api.setState('isLoaded', true);
-    api.setState('isLoading', false);
+        api.setState('nextFormData', layoutOnly);
+        api.setState('currentScreenIndex', currentScreenIndex);
+        api.setState('currentScreenNumber', currentScreenNumber);
+        api.setState('screenCount', screenCount);
+        api.setState('currentSections', currentSections);
+        api.setState('fields', fieldData);
 
-    api.setState('canGoNext', currentScreenNumber < screenCount);
-    api.setState('canGoLast', currentScreenNumber < screenCount);
-    api.setState('canGoPrevious', currentScreenNumber !== 1);
-    api.setState('canGoFirst', currentScreenNumber !== 1);
-    api.setState('canGoIndex', screenCount > 1);
+        api.setState('isLoaded', true);
+        api.setState('isLoading', false);
 
-    api.setState('canProcess', currentScreenNumber === screenCount && vr.allOk);
-    api.setState('canReset', false);
+        api.setState('canGoNext', currentScreenNumber < screenCount);
+        api.setState('canGoLast', currentScreenNumber < screenCount);
+        api.setState('canGoPrevious', currentScreenNumber !== 1);
+        api.setState('canGoFirst', currentScreenNumber !== 1);
+        api.setState('canGoIndex', screenCount > 1);
+        api.setState('canProcess', currentScreenNumber === screenCount && vr.allOk);
+        api.setState('canReset', false);
 
-    api.emit('CTRL_NEXTFORM#LOADING_COMPLETED');
-
+        api.emit('CTRL_NEXTFORM#LOADING_COMPLETED');
+    } else {
+        api.emit('CTRL_NEXTFORM#LOADING_FAILED');
+        api.setState('isLoading', false);
+        return;
+    }
 }]]></script>
         <script_api_version>2.0.0</script_api_version>
         <sys_class_name>sys_ux_client_script</sys_class_name>
         <sys_created_by>dylan.lindgren</sys_created_by>
         <sys_created_on>2022-11-21 07:48:35</sys_created_on>
         <sys_id>ae52562d8757d110e942a9773cbb355a</sys_id>
-        <sys_mod_count>18</sys_mod_count>
+        <sys_mod_count>19</sys_mod_count>
         <sys_name>Handle NextForm Object Load</sys_name>
         <sys_package display_value="NextForm" source="x_snc_nf">d3a2faa487971110e942a9773cbb3537</sys_package>
         <sys_policy/>
         <sys_scope display_value="NextForm">d3a2faa487971110e942a9773cbb3537</sys_scope>
         <sys_update_name>sys_ux_client_script_ae52562d8757d110e942a9773cbb355a</sys_update_name>
         <sys_updated_by>admin</sys_updated_by>
-        <sys_updated_on>2026-05-05 22:05:23</sys_updated_on>
+        <sys_updated_on>2026-05-07 17:44:12</sys_updated_on>
         <target>macroponent</target>
         <type>default</type>
     </sys_ux_client_script>
