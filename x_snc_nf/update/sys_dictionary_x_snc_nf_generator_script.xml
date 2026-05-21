@@ -17,7 +17,29 @@
         <comments/>
         <create_roles/>
         <default_value>(function generateNextFormObject () {&#13;
-&#13;
+    return new x_snc_nf.NextForm().addScreen().addRow().addColumn().addField(new x_snc_nf.NextField(&#13;
+            'string',&#13;
+            'Comment',&#13;
+            'comment', {&#13;
+                displayValue: '',&#13;
+                value: '',&#13;
+                displayValue: '',&#13;
+		maxLength: 1000,&#13;
+            fieldRegex: [{&#13;
+                "pattern": '^[a-Z]*$',&#13;
+                "placeholder": "",&#13;
+                "guidanceText": "Value does not match required pattern",&#13;
+                "type": "suggestion"&#13;
+            }],&#13;
+            nfValidation: {&#13;
+                readonly: false,&#13;
+                maxLength: 40,&#13;
+                minLength: 10,&#13;
+                mandatory: true,&#13;
+                allowedValues: ['value 1', 'value 2']&#13;
+            },&#13;
+            }&#13;
+        ));&#13;
 })();</default_value>
         <defaultsort/>
         <delete_roles/>
@@ -60,7 +82,7 @@
         <sys_scope display_value="NextForm">d3a2faa487971110e942a9773cbb3537</sys_scope>
         <sys_update_name>sys_dictionary_x_snc_nf_generator_script</sys_update_name>
         <sys_updated_by>admin</sys_updated_by>
-        <sys_updated_on>2026-03-26 15:11:35</sys_updated_on>
+        <sys_updated_on>2026-05-21 15:11:32</sys_updated_on>
         <table_reference>false</table_reference>
         <text_index>false</text_index>
         <unique>false</unique>
