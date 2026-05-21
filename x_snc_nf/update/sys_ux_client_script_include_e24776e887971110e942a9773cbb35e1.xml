@@ -37,6 +37,7 @@
         }
 
         let checkLength = true;
+        let checkAllowedValues = true;
         const type = String(rule.type || '').toLowerCase();
         switch (type) {
             case 'integer':
@@ -65,7 +66,20 @@
                 checkLength = false;
                 break;
             case 'choice':
+                checkAllowedValues = false;
                 checkLength = false;
+                let validChoice = false;
+                if (Array.isArray(field.choices)) {
+                    for (var choice of choices) {
+                        if (choice.value === field.value) {
+                            validCoice = true;
+                            break;
+                        }
+                    }
+                }
+                if (!validChoice) {
+                    return false;
+                }
                 break;
             default:
                 // no type enforcement
@@ -73,7 +87,7 @@
         }
 
         // Allowed values (fail fast)
-        if (Array.isArray(rule.allowedValues) && rule.allowedValues.length) {
+        if (checkAllowedValues && Array.isArray(rule.allowedValues) && rule.allowedValues.length) {
             if (rule.allowedValues.indexOf(strVal) === -1) {
                 fieldErrorMessage(field, 'Value not permitted');
                 return false;
@@ -162,13 +176,13 @@
         <sys_created_by>dylan.lindgren</sys_created_by>
         <sys_created_on>2022-11-18 07:56:12</sys_created_on>
         <sys_id>e24776e887971110e942a9773cbb35e1</sys_id>
-        <sys_mod_count>12</sys_mod_count>
+        <sys_mod_count>13</sys_mod_count>
         <sys_name>NextFormUtil</sys_name>
         <sys_package display_value="NextForm" source="x_snc_nf">d3a2faa487971110e942a9773cbb3537</sys_package>
         <sys_policy/>
         <sys_scope display_value="NextForm">d3a2faa487971110e942a9773cbb3537</sys_scope>
         <sys_update_name>sys_ux_client_script_include_e24776e887971110e942a9773cbb35e1</sys_update_name>
         <sys_updated_by>admin</sys_updated_by>
-        <sys_updated_on>2026-05-20 20:54:09</sys_updated_on>
+        <sys_updated_on>2026-05-21 20:41:55</sys_updated_on>
     </sys_ux_client_script_include>
 </record_update>
