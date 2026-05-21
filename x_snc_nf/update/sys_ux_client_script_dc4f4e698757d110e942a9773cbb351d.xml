@@ -19,31 +19,42 @@ function handler({
     helpers,
     imports
 }) {
-    ///consider enforcing canProcess here vs allowing caller to control that
-    const skipValidation = event?.payload?.skipValidation === true;
-    const fields = api.state.fields;
-    api.setState('fields', fields);
+    const nf = imports['x_snc_nf.NextFormUtil']();
+    const skipValidation = event && event.payload && event.payload.skipValidation === true;
+    const onLast = api.state.currentScreenNumber === api.state.screenCount;
+
+    if (!onLast) {
+        return;
+    }
+
     if (!skipValidation) {
-        const nf = imports['x_snc_nf.NextFormUtil']();
-        const vr = nf.validateAllFields(api.state.fields);
-        if (!vr.allOk) {
+        if (!api.state.canProcess || api.state.isProcessed) {
             api.setState('canProcess', false);
             return;
         }
+        const fieldsForValidation = nf.cloneFieldsMap(api.state.fields);
+        const vr = nf.validateAllFields(fieldsForValidation);
+        api.setState('fields', fieldsForValidation);
+        api.setState('canProcess', nf.canProcess({
+            currentScreenNumber: api.state.currentScreenNumber,
+            screenCount: api.state.screenCount,
+            isProcessed: api.state.isProcessed
+        }, vr));
+        if (!vr.allOk) {
+            return;
+        }
     }
-    const onLast = api.state.currentScreenNumber === api.state.screenCount;
-    //api.setState('canProcess', onLast && !api.state.isProcessed);
 
     api.emit('CTRL_NEXTFORM#PROCESSING_STARTED');
 
+    const fields = api.state.fields;
+    const processEditedOnly = api.context.props.processEditedOnly === true;
     let nfData = {};
 
     Object.keys(fields).forEach(function(key) {
-        var field = fields[key];
-        if (field.isDataField !== false 
-        && (!api.context.props.processEditedOnly 
-        || (!Object.hasOwn(field, 'originalValue') && field.value !== '' ///not sure if this is ever true
-        || field.originalValue !== field.value))) {
+        const field = fields[key];
+        if (field.isDataField !== false && (!processEditedOnly ||
+            (Object.hasOwn(field, 'originalValue') && field.originalValue !== field.value))) {
             nfData[field.name] = {
                 name: field.name,
                 value: field.value,
@@ -72,14 +83,14 @@ function handler({
         <sys_created_by>dylan.lindgren</sys_created_by>
         <sys_created_on>2022-11-21 07:35:16</sys_created_on>
         <sys_id>dc4f4e698757d110e942a9773cbb351d</sys_id>
-        <sys_mod_count>48</sys_mod_count>
+        <sys_mod_count>51</sys_mod_count>
         <sys_name>Submit for Processing</sys_name>
         <sys_package display_value="NextForm" source="x_snc_nf">d3a2faa487971110e942a9773cbb3537</sys_package>
         <sys_policy/>
         <sys_scope display_value="NextForm">d3a2faa487971110e942a9773cbb3537</sys_scope>
         <sys_update_name>sys_ux_client_script_dc4f4e698757d110e942a9773cbb351d</sys_update_name>
         <sys_updated_by>admin</sys_updated_by>
-        <sys_updated_on>2026-05-21 20:47:37</sys_updated_on>
+        <sys_updated_on>2026-05-21 23:09:01</sys_updated_on>
         <target>macroponent</target>
         <type>default</type>
     </sys_ux_client_script>

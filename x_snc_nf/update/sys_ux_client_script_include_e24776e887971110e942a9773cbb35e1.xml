@@ -11,8 +11,67 @@
         return field.isDataField !== false;
     }
 
+    function resolveValidationType(field, rule) {
+        const ruleType = rule && rule.type != null && String(rule.type) !== '' ?
+            String(rule.type).toLowerCase() :
+            '';
+        if (ruleType) {
+            return ruleType;
+        }
+        const fieldType = field && field.type != null && String(field.type) !== '' ?
+            String(field.type).toLowerCase() :
+            '';
+        return fieldType || '';
+    }
+
+    function hasValidationConfig(rule) {
+        if (!rule || typeof rule !== 'object') {
+            return false;
+        }
+        return rule.mandatory === true ||
+            (rule.type != null && String(rule.type) !== '') ||
+            rule.minLength != null ||
+            (rule.maxLength != null && rule.maxLength > 0) ||
+            (Array.isArray(rule.allowedValues) && rule.allowedValues.length > 0);
+    }
+
+    function isMandatory(field, rule) {
+        return rule.mandatory === true || field.mandatory === true;
+    }
+
+    function fieldErrorMessage(field, message) {
+        if (message) {
+            field.messages = [{
+                message: message,
+                type: 'error'
+            }];
+        } else {
+            delete field.messages;
+        }
+    }
+
+    function validateChoice(field) {
+        if (!Array.isArray(field.choices) || field.choices.length < 1) {
+            fieldErrorMessage(field, 'No valid choices are configured for this field');
+            return false;
+        }
+        const value = field.value === null || field.value === undefined ?
+            '' :
+            String(field.value);
+        for (const choice of field.choices) {
+            if (choice != null && String(choice.value) === value) {
+                return true;
+            }
+        }
+        fieldErrorMessage(field, 'Value not permitted');
+        return false;
+    }
+
     function validateField(field) {
-        fieldErrorMessage(field, null); //clear any existing message
+        if (!field || typeof field !== 'object') {
+            return true;
+        }
+        fieldErrorMessage(field, null);
         if (!isDataField(field)) {
             return true;
         }
@@ -21,15 +80,17 @@
         }
 
         const rule = field.nfValidation || null;
-        if (!rule) {
+        if (!hasValidationConfig(rule)) {
             return true;
         }
+        const ruleObj = rule;
+        const type = resolveValidationType(field, ruleObj);
+        const strVal = (field.value === null || field.value === undefined || field.value === '') ?
+            null :
+            String(field.value);
 
-        const strVal = (field.value === null || field.value === undefined || field.value === '') ? null : String(field.value);
-
-        // Mandatory check (fail fast)
         if (strVal === null) {
-            if (rule.mandatory === true) {
+            if (isMandatory(field, ruleObj)) {
                 fieldErrorMessage(field, 'Field is mandatory');
                 return false;
             }
@@ -38,7 +99,6 @@
 
         let checkLength = true;
         let checkAllowedValues = true;
-        const type = String(rule.type || '').toLowerCase();
         switch (type) {
             case 'integer':
                 if (!/^-?\d+$/.test(strVal)) {
@@ -59,7 +119,9 @@
                 }
                 return true; // nothing else applies
             case 'date':
-                if (isNaN(new Date(strVal).getTime())) { ///verify this works well with SN
+            case 'glide_date':
+            case 'glide_date_time':
+                if (isNaN(new Date(strVal).getTime())) {
                     fieldErrorMessage(field, 'Value must be a valid date');
                     return false;
                 }
@@ -68,27 +130,14 @@
             case 'choice':
                 checkAllowedValues = false;
                 checkLength = false;
-                let validChoice = false;
-                if (Array.isArray(field.choices)) {
-                    for (var choice of choices) {
-                        if (choice.value === field.value) {
-                            validCoice = true;
-                            break;
-                        }
-                    }
-                }
-                if (!validChoice) {
-                    return false;
-                }
-                break;
+                return validateChoice(field);
             default:
-                // no type enforcement
                 break;
         }
 
         // Allowed values (fail fast)
-        if (checkAllowedValues && Array.isArray(rule.allowedValues) && rule.allowedValues.length) {
-            if (rule.allowedValues.indexOf(strVal) === -1) {
+        if (checkAllowedValues && Array.isArray(ruleObj.allowedValues) && ruleObj.allowedValues.length) {
+            if (ruleObj.allowedValues.indexOf(strVal) === -1) {
                 fieldErrorMessage(field, 'Value not permitted');
                 return false;
             }
@@ -96,12 +145,12 @@
 
         // Length checks (fail fast)
         if (checkLength) {
-            if (strVal.length < rule.minLength) {
-                fieldErrorMessage(field, 'Must be at least ' + rule.minLength + ' characters long');
+            if (ruleObj.minLength != null && strVal.length < ruleObj.minLength) {
+                fieldErrorMessage(field, 'Must be at least ' + ruleObj.minLength + ' characters long');
                 return false;
             }
-            if (rule.maxLength > 0 && strVal.length > rule.maxLength) {
-                fieldErrorMessage(field, 'Exceeds maximum length: ' + rule.maxLength);
+            if (ruleObj.maxLength > 0 && strVal.length > ruleObj.maxLength) {
+                fieldErrorMessage(field, 'Exceeds maximum length: ' + ruleObj.maxLength);
                 return false;
             }
         }
@@ -126,49 +175,61 @@
     function validateAllFields(fields) {
         const out = {};
         let allOk = true;
-        Object.keys(fields).forEach(function (key) {
+        Object.keys(fields || {}).forEach(function(key) {
             const field = fields[key];
             const result = validateField(field);
             if (!result) {
                 allOk = false;
             }
-            out[key] = {name: field.name, valid: result};
+            out[key] = { name: field.name, valid: result };
         });
-        return { fields: out, allOk: allOk };
+        return { fields: out, allOk };
     }
 
-    /**
-     * Use the same UX events as @servicenow/now-record-form-connected (sys_ux_event export):
-     *   SHOW: NOW_RECORD_FORM_SECTION_COLUMN_LAYOUT#SHOW_FIELD_MESSAGE  payload: fieldName, type, message
-     *   HIDE: NOW_RECORD_FORM_SECTION_COLUMN_LAYOUT#HIDE_FIELD_MESSAGE  payload: fieldName, clearAll
-     */
+    function cloneFieldsMap(fields) {
+        const cloned = {};
+        Object.keys(fields || {}).forEach(function(key) {
+            const field = fields[key];
+            cloned[key] = field && typeof field === 'object' ?
+                Object.assign({}, field) :
+                field;
+        });
+        return cloned;
+    }
+
+    function canProcess(state, vr) {
+        const onLast = state.currentScreenNumber === state.screenCount;
+        return onLast && !state.isProcessed && vr && vr.allOk === true;
+    }
+    /* The old way (for reference)
+    
+      Use the same UX events as @servicenow/now-record-form-connected (sys_ux_event export):
+        SHOW: NOW_RECORD_FORM_SECTION_COLUMN_LAYOUT#SHOW_FIELD_MESSAGE  payload: fieldName, type, message
+        HIDE: NOW_RECORD_FORM_SECTION_COLUMN_LAYOUT#HIDE_FIELD_MESSAGE  payload: fieldName, clearAll
+     
     function fieldErrorMessage(field, message) {
         const SHOW_EVENT = 'sn_now_record_form.NOW_RECORD_FORM_SECTION_COLUMN_LAYOUT#SHOW_FIELD_MESSAGE';
         const HIDE_EVENT = 'sn_now_record_form.NOW_RECORD_FORM_SECTION_COLUMN_LAYOUT#HIDE_FIELD_MESSAGE';
         if (message) {
-        field.messages = [
-            {
-                "message": message,
-                "type": "error"
-            }
-        ]
-            //api.emit(SHOW_EVENT, {
-            //    fieldName: field.name,
-            //    type: 'error',
-            //    message: message
-            //});
+            api.emit(SHOW_EVENT, {
+                fieldName: field.name,
+                type: 'error',
+                message: message
+            });
         } else {
-            //api.emit(HIDE_EVENT, {
-            //    fieldName: field.name,
-            //    clearAll: false
-            //});
-            delete field.messages;
+            api.emit(HIDE_EVENT, {
+                fieldName: field.name,
+                clearAll: false
+            });
         }
     }
+    */
 
     return {
-        validateField: validateField,
-        validateAllFields: validateAllFields
+        validateField,
+        validateAllFields,
+        cloneFieldsMap,
+        canProcess
     };
 }]]></script>
         <script_api_version>2.0.0</script_api_version>
@@ -176,13 +237,13 @@
         <sys_created_by>dylan.lindgren</sys_created_by>
         <sys_created_on>2022-11-18 07:56:12</sys_created_on>
         <sys_id>e24776e887971110e942a9773cbb35e1</sys_id>
-        <sys_mod_count>13</sys_mod_count>
+        <sys_mod_count>14</sys_mod_count>
         <sys_name>NextFormUtil</sys_name>
         <sys_package display_value="NextForm" source="x_snc_nf">d3a2faa487971110e942a9773cbb3537</sys_package>
         <sys_policy/>
         <sys_scope display_value="NextForm">d3a2faa487971110e942a9773cbb3537</sys_scope>
         <sys_update_name>sys_ux_client_script_include_e24776e887971110e942a9773cbb35e1</sys_update_name>
         <sys_updated_by>admin</sys_updated_by>
-        <sys_updated_on>2026-05-21 20:41:55</sys_updated_on>
+        <sys_updated_on>2026-05-21 22:43:05</sys_updated_on>
     </sys_ux_client_script_include>
 </record_update>
