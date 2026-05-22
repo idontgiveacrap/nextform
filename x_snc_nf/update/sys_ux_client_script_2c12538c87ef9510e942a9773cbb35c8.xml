@@ -19,7 +19,7 @@ function handler({
     helpers,
     imports
 }) {
-        api.setState('isLoading', false);
+    api.setState('isLoading', false);
     const proc = api.data.process_nextform_data;
     const rawOutput = proc && proc.output && proc.output.result !== undefined && proc.output.result !== null ?
         proc.output.result :
@@ -35,6 +35,23 @@ function handler({
         console.error('NextForm process failed:', msg, body);
         api.emit('CTRL_NEXTFORM#PROCESSING_FAILED');
     } else {
+        // Advance baselines so processEditedOnly has the correct (presumably new) original values.
+        const fields = api.state.fields;
+        if (fields && typeof fields === 'object') {
+            const synced = {};
+            Object.keys(fields).forEach(function(key) {
+                const field = fields[key];
+                if (field && typeof field === 'object' && field.isDataField !== false &&
+                    Object.hasOwn(field, 'originalValue')) {
+                    synced[key] = Object.assign({}, field, {
+                        originalValue: field.value
+                    });
+                } else {
+                    synced[key] = field;
+                }
+            });
+            api.setState('fields', synced);
+        }
         api.setState('isProcessed', true);
         api.emit('CTRL_NEXTFORM#PROCESSING_COMPLETED');
     }
@@ -44,14 +61,14 @@ function handler({
         <sys_created_by>dylan.lindgren</sys_created_by>
         <sys_created_on>2022-11-29 06:51:56</sys_created_on>
         <sys_id>2c12538c87ef9510e942a9773cbb35c8</sys_id>
-        <sys_mod_count>7</sys_mod_count>
+        <sys_mod_count>8</sys_mod_count>
         <sys_name>Handle NextForm Processing Completed</sys_name>
         <sys_package display_value="NextForm" source="x_snc_nf">d3a2faa487971110e942a9773cbb3537</sys_package>
         <sys_policy/>
         <sys_scope display_value="NextForm">d3a2faa487971110e942a9773cbb3537</sys_scope>
         <sys_update_name>sys_ux_client_script_2c12538c87ef9510e942a9773cbb35c8</sys_update_name>
         <sys_updated_by>admin</sys_updated_by>
-        <sys_updated_on>2026-05-14 18:43:10</sys_updated_on>
+        <sys_updated_on>2026-05-22 19:55:41</sys_updated_on>
         <target>macroponent</target>
         <type>default</type>
     </sys_ux_client_script>
