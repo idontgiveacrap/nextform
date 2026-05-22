@@ -30,13 +30,13 @@
         }
         return rule.mandatory === true ||
             (rule.type != null && String(rule.type) !== '') ||
-            rule.minLength != null ||
+            (rule.minLength > 0) ||
             (rule.maxLength != null && rule.maxLength > 0) ||
             (Array.isArray(rule.allowedValues) && rule.allowedValues.length > 0);
     }
 
     function isMandatory(field, rule) {
-        return rule.mandatory === true || field.mandatory === true;
+        return rule?.mandatory === true || field?.mandatory === true;
     }
 
     function fieldErrorMessage(field, message) {
@@ -85,7 +85,7 @@
         }
         const ruleObj = rule;
         const type = resolveValidationType(field, ruleObj);
-        const strVal = (field.value === null || field.value === undefined || field.value === '') ?
+        const strVal = (field.value == null || field.value === '') ?
             null :
             String(field.value);
 
@@ -122,6 +122,7 @@
             case 'glide_date':
             case 'glide_date_time':
                 if (isNaN(new Date(strVal).getTime())) {
+                    //api.context.session.user.dateFormat
                     fieldErrorMessage(field, 'Value must be a valid date');
                     return false;
                 }
@@ -137,7 +138,8 @@
 
         // Allowed values (fail fast)
         if (checkAllowedValues && Array.isArray(ruleObj.allowedValues) && ruleObj.allowedValues.length) {
-            if (ruleObj.allowedValues.indexOf(strVal) === -1) {
+            const allowed = ruleObj.allowedValues.map(v => String(v));
+            if (!allowed.includes(strVal)) {
                 fieldErrorMessage(field, 'Value not permitted');
                 return false;
             }
@@ -149,7 +151,7 @@
                 fieldErrorMessage(field, 'Must be at least ' + ruleObj.minLength + ' characters long');
                 return false;
             }
-            if (ruleObj.maxLength > 0 && strVal.length > ruleObj.maxLength) {
+            if (ruleObj.maxLength > 0 && strVal.length > ruleObj.maxLength) { //normally handled by form
                 fieldErrorMessage(field, 'Exceeds maximum length: ' + ruleObj.maxLength);
                 return false;
             }
@@ -181,7 +183,7 @@
             if (!result) {
                 allOk = false;
             }
-            out[key] = { name: field.name, valid: result };
+            out[key] = { name: field?.name, valid: result };
         });
         return { fields: out, allOk };
     }
@@ -237,13 +239,13 @@
         <sys_created_by>dylan.lindgren</sys_created_by>
         <sys_created_on>2022-11-18 07:56:12</sys_created_on>
         <sys_id>e24776e887971110e942a9773cbb35e1</sys_id>
-        <sys_mod_count>14</sys_mod_count>
+        <sys_mod_count>16</sys_mod_count>
         <sys_name>NextFormUtil</sys_name>
         <sys_package display_value="NextForm" source="x_snc_nf">d3a2faa487971110e942a9773cbb3537</sys_package>
         <sys_policy/>
         <sys_scope display_value="NextForm">d3a2faa487971110e942a9773cbb3537</sys_scope>
         <sys_update_name>sys_ux_client_script_include_e24776e887971110e942a9773cbb35e1</sys_update_name>
         <sys_updated_by>admin</sys_updated_by>
-        <sys_updated_on>2026-05-21 22:43:05</sys_updated_on>
+        <sys_updated_on>2026-05-22 15:29:03</sys_updated_on>
     </sys_ux_client_script_include>
 </record_update>
