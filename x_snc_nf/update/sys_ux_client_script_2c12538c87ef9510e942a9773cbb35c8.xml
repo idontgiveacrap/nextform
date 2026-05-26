@@ -19,39 +19,57 @@ function handler({
     helpers,
     imports
 }) {
-    api.setState('isLoading', false);
-    const proc = api.data.process_nextform_data;
-    const rawOutput = proc && proc.output && proc.output.result !== undefined && proc.output.result !== null ?
-        proc.output.result :
-        proc && proc.output;
-    const body = rawOutput && typeof rawOutput === 'object' ? rawOutput : {};
-
-    const processorReportedFailure = typeof body.success !== 'undefined' && body.success === false;
-
-    if (processorReportedFailure) {
-        const msg = body.message && String(body.message).length ?
-            String(body.message) :
-            'NextForm processor reported success: false';
+    function failure(msg) {
+        api.setState('lastProcessResult', processResult);
         console.error('NextForm process failed:', msg, body);
         api.emit('CTRL_NEXTFORM#PROCESSING_FAILED');
+        return;
+    }
+    api.setState('isLoading', false);
+    const proc = api.data.process_nextform_data;
+    const rawOutput = proc?.output?.result;
+    const body = rawOutput && typeof rawOutput === 'object' ? rawOutput : {};
+    const apiSuccess = body.success === true || body.success === 'true';
+    const processResult = {
+        success: apiSuccess,
+        message: body.message != null ? String(body.message) : '',
+        newValues: body.newValues && typeof body.newValues === 'object' && !Array.isArray(body.newValues) ?
+            body.newValues : {}
+    };
+
+    const processorReportedFailure = !apiSuccess;
+
+    if (processorReportedFailure) {
+        failure(body.message && String(body.message).length ?
+            String(body.message) :
+            'NextForm processor reported success: false');
     } else {
-        // Advance baselines so processEditedOnly has the correct (presumably new) original values.
+        // Apply API-reported values as baselines for fields in newValues (processEditedOnly-safe).
         const fields = api.state.fields;
-        if (fields && typeof fields === 'object') {
+        const newValues = processResult.newValues;
+        if (newValues && typeof newValues === 'object' && !Array.isArray(newValues)) {
             const synced = {};
             Object.keys(fields).forEach(function(key) {
                 const field = fields[key];
+                const fieldName = field?.name;
                 if (field && typeof field === 'object' && field.isDataField !== false &&
-                    Object.hasOwn(field, 'originalValue')) {
-                    synced[key] = Object.assign({}, field, {
-                        originalValue: field.value
-                    });
+                    fieldName && Object.prototype.hasOwnProperty.call(newValues, fieldName)) {
+                    const resolved = newValues[fieldName]?.value;
+                    if (resolved) {
+                        synced[key] = Object.assign({}, field, {
+                            value: resolved,
+                            originalValue: resolved
+                        });
+                    }
                 } else {
                     synced[key] = field;
                 }
             });
             api.setState('fields', synced);
+        } else {
+            failure("No valid processed values returned");
         }
+        api.setState('lastProcessResult', processResult);
         api.setState('isProcessed', true);
         api.emit('CTRL_NEXTFORM#PROCESSING_COMPLETED');
     }
@@ -61,14 +79,14 @@ function handler({
         <sys_created_by>dylan.lindgren</sys_created_by>
         <sys_created_on>2022-11-29 06:51:56</sys_created_on>
         <sys_id>2c12538c87ef9510e942a9773cbb35c8</sys_id>
-        <sys_mod_count>8</sys_mod_count>
+        <sys_mod_count>10</sys_mod_count>
         <sys_name>Handle NextForm Processing Completed</sys_name>
         <sys_package display_value="NextForm" source="x_snc_nf">d3a2faa487971110e942a9773cbb3537</sys_package>
         <sys_policy/>
         <sys_scope display_value="NextForm">d3a2faa487971110e942a9773cbb3537</sys_scope>
         <sys_update_name>sys_ux_client_script_2c12538c87ef9510e942a9773cbb35c8</sys_update_name>
         <sys_updated_by>admin</sys_updated_by>
-        <sys_updated_on>2026-05-22 19:55:41</sys_updated_on>
+        <sys_updated_on>2026-05-22 21:46:09</sys_updated_on>
         <target>macroponent</target>
         <type>default</type>
     </sys_ux_client_script>

@@ -13,6 +13,17 @@
 NFAPIHelper.prototype = {
     initialize: function() {},
 
+    /**
+     * Processor may return newValues; otherwise use the flat map derived from nfData.
+     */
+    _resolveNewValues: function(normalizedOutput, nfData) {
+        const fromProcessor = normalizedOutput.newValues;
+        if (fromProcessor && typeof fromProcessor === 'object' && !Array.isArray(fromProcessor)) {
+            return fromProcessor;
+        }
+        return nfData;
+    },
+
     _serviceError: function(status, message, detail) {
         var err = new sn_ws_err.ServiceError();
         err.setStatus(status);
@@ -76,15 +87,22 @@ NFAPIHelper.prototype = {
         }
         try {
             const output = evaluator.evaluateScript(processorGr, 'script');
-			const normalizedOutput = typeof output === "object" && output !== null ? output : {};
+            const normalizedOutput = typeof output === 'object' && output !== null ? output : {
+                success: false,
+                message: "No processor output"
+            };
             let success = false;
             if (typeof normalizedOutput.success !== 'undefined') {
                 success = normalizedOutput.success === true || normalizedOutput.success === 'true' || normalizedOutput.success === 1 || normalizedOutput.success === '1';
             }
 
+            var message = normalizedOutput.message != null ? String(normalizedOutput.message) : '';
+            var newValues = this._resolveNewValues(normalizedOutput, nfData);
+
             return {
                 success: success,
-                message: normalizedOutput.message ?? ""
+                message: message,
+                newValues: newValues ?? {}
             };
         } catch (ex) {
             gs.error('NextForm processor script failed: ' + ex);
@@ -98,13 +116,13 @@ NFAPIHelper.prototype = {
         <sys_created_by>dylan.lindgren</sys_created_by>
         <sys_created_on>2022-11-21 03:05:24</sys_created_on>
         <sys_id>267191698793d110e942a9773cbb356b</sys_id>
-        <sys_mod_count>16</sys_mod_count>
+        <sys_mod_count>17</sys_mod_count>
         <sys_name>NFAPIHelper</sys_name>
         <sys_package display_value="NextForm" source="x_snc_nf">d3a2faa487971110e942a9773cbb3537</sys_package>
         <sys_policy>read</sys_policy>
         <sys_scope display_value="NextForm">d3a2faa487971110e942a9773cbb3537</sys_scope>
         <sys_update_name>sys_script_include_267191698793d110e942a9773cbb356b</sys_update_name>
         <sys_updated_by>admin</sys_updated_by>
-        <sys_updated_on>2026-05-14 17:04:46</sys_updated_on>
+        <sys_updated_on>2026-05-22 21:43:09</sys_updated_on>
     </sys_script_include>
 </record_update>
