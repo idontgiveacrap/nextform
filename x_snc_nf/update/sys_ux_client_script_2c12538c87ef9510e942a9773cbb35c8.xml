@@ -19,14 +19,22 @@ function handler({
     helpers,
     imports
 }) {
-    function failure(msg) {
-        api.setState('lastProcessResult', processResult);
-        console.error('NextForm process failed:', msg, body);
-        api.emit('CTRL_NEXTFORM#PROCESSING_FAILED');
-        return;
+    const PATCH_KEYS = ['value', 'displayValue', 'mandatory', 'readonly', 'messages', 'choices'];
+
+    function applyFieldPatch(field, patch) {
+        const updated = Object.assign({}, field);
+        PATCH_KEYS.forEach(function(patchKey) {
+            if (Object.prototype.hasOwnProperty.call(patch, patchKey)) {
+                updated[patchKey] = patch[patchKey];
+            }
+        });
+        if (Object.prototype.hasOwnProperty.call(patch, 'value')) {
+            updated.originalValue = patch.value;
+        }
+        return updated;
     }
+
     api.setState('isLoading', false);
-    //const proc = api.data.process_nextform_data;
     const rawOutput = event.payload.data.output?.result;
     const body = rawOutput && typeof rawOutput === 'object' ? rawOutput : {};
     const apiSuccess = body.success === true || body.success === 'true';
@@ -37,56 +45,54 @@ function handler({
             body.newValues : {}
     };
 
-    const processorReportedFailure = !apiSuccess;
+    function failure(msg) {
+        api.setState('lastProcessResult', processResult);
+        console.error('NextForm process failed:', msg, body);
+        api.emit('CTRL_NEXTFORM#PROCESSING_FAILED');
+    }
 
-    if (processorReportedFailure) {
-        failure(body.message && String(body.message).length ?
+    if (!apiSuccess) {
+        return failure(body.message && String(body.message).length ?
             String(body.message) :
             'NextForm processor reported success: false');
-    } else {
-        // Apply API-reported values as baselines for fields in newValues (processEditedOnly-safe).
-        const fields = api.state.fields;
-        const newValues = processResult.newValues;
-        if (newValues && typeof newValues === 'object' && !Array.isArray(newValues)) {
-            const synced = {};
-            Object.keys(fields).forEach(function(key) {
-                const field = fields[key];
-                const fieldName = field?.name;
-                if (field && typeof field === 'object' && field.isDataField !== false &&
-                    fieldName && Object.prototype.hasOwnProperty.call(newValues, fieldName)) {
-                    const resolved = newValues[fieldName]?.value;
-                    if (resolved) {
-                        synced[key] = Object.assign({}, field, {
-                            value: resolved,
-                            originalValue: resolved
-                        });
-                    }
-                } else {
-                    synced[key] = field;
-                }
-            });
-            api.setState('fields', synced);
-        } else {
-            failure("No valid processed values returned");
-        }
-        api.setState('lastProcessResult', processResult);
-        api.setState('isProcessed', true);
-        api.emit('CTRL_NEXTFORM#PROCESSING_COMPLETED');
     }
+
+    const newValues = processResult.newValues;
+    if (!newValues || typeof newValues !== 'object' || Array.isArray(newValues)) {
+        return failure('No valid processed values returned');
+    }
+
+    // Apply API-reported patches as baselines for fields in newValues (processEditedOnly-safe).
+    const fields = api.state.fields;
+    const synced = {};
+    Object.keys(fields).forEach(function(key) {
+        const field = fields[key];
+        const fieldName = field?.name;
+        if (field && typeof field === 'object' && field.isDataField !== false &&
+            fieldName && Object.prototype.hasOwnProperty.call(newValues, fieldName)) {
+            synced[key] = applyFieldPatch(field, newValues[fieldName]);
+        } else {
+            synced[key] = field;
+        }
+    });
+    api.setState('fields', synced);
+    api.setState('lastProcessResult', processResult);
+    api.setState('isProcessed', true);
+    api.emit('CTRL_NEXTFORM#PROCESSING_COMPLETED');
 }]]></script>
         <script_api_version>2.0.0</script_api_version>
         <sys_class_name>sys_ux_client_script</sys_class_name>
         <sys_created_by>dylan.lindgren</sys_created_by>
         <sys_created_on>2022-11-29 06:51:56</sys_created_on>
         <sys_id>2c12538c87ef9510e942a9773cbb35c8</sys_id>
-        <sys_mod_count>21</sys_mod_count>
+        <sys_mod_count>22</sys_mod_count>
         <sys_name>Handle NextForm Processing Completed</sys_name>
         <sys_package display_value="NextForm" source="x_snc_nf">d3a2faa487971110e942a9773cbb3537</sys_package>
         <sys_policy/>
         <sys_scope display_value="NextForm">d3a2faa487971110e942a9773cbb3537</sys_scope>
         <sys_update_name>sys_ux_client_script_2c12538c87ef9510e942a9773cbb35c8</sys_update_name>
         <sys_updated_by>admin</sys_updated_by>
-        <sys_updated_on>2026-05-26 14:55:14</sys_updated_on>
+        <sys_updated_on>2026-05-26 15:24:06</sys_updated_on>
         <target>macroponent</target>
         <type>default</type>
     </sys_ux_client_script>
