@@ -13,15 +13,38 @@
 NFAPIHelper.prototype = {
     initialize: function() {},
 
+    _ALLOWED_NEW_VALUE_FIELD_KEYS: ['value', 'displayValue', 'mandatory', 'readonly', 'messages', 'choices'],
+
     /**
      * Processor may return newValues; otherwise use the flat map derived from nfData.
      */
-    _resolveNewValues: function(normalizedOutput, nfData) {
-        const fromProcessor = normalizedOutput.newValues;
+    _resolveNewValues: function(fromProcessor, nfData) {
+        let toEvaluate;
         if (fromProcessor && typeof fromProcessor === 'object' && !Array.isArray(fromProcessor)) {
-            return fromProcessor;
+            toEvaluate = fromProcessor;
+        } else {
+            toEvaluate = nfData || {};
         }
-        return nfData;
+        const answer = {};
+        Object.keys(toEvaluate).forEach((fieldName) => {
+            const entry = toEvaluate[fieldName];
+            if (entry && typeof entry === 'object' && !Array.isArray(entry)) {
+                const patch = {};
+                this._ALLOWED_NEW_VALUE_FIELD_KEYS.forEach(key => {
+                    if (Object.prototype.hasOwnProperty.call(entry, key)) {
+                        patch[key] = entry[key];
+                    }
+                });
+                if (Object.keys(patch).length > 0) {
+                    answer[fieldName] = patch;
+                }
+            } else if (typeof entry !== 'undefined') {
+                answer[fieldName] = {
+                    value: entry
+                };
+            }
+        });
+        return answer;
     },
 
     _serviceError: function(status, message, detail) {
@@ -97,7 +120,7 @@ NFAPIHelper.prototype = {
             }
 
             var message = normalizedOutput.message != null ? String(normalizedOutput.message) : '';
-            var newValues = this._resolveNewValues(normalizedOutput, nfData);
+            var newValues = this._resolveNewValues(normalizedOutput.newValues, nfData);
 
             return {
                 success: success,
@@ -116,13 +139,13 @@ NFAPIHelper.prototype = {
         <sys_created_by>dylan.lindgren</sys_created_by>
         <sys_created_on>2022-11-21 03:05:24</sys_created_on>
         <sys_id>267191698793d110e942a9773cbb356b</sys_id>
-        <sys_mod_count>17</sys_mod_count>
+        <sys_mod_count>19</sys_mod_count>
         <sys_name>NFAPIHelper</sys_name>
         <sys_package display_value="NextForm" source="x_snc_nf">d3a2faa487971110e942a9773cbb3537</sys_package>
         <sys_policy>read</sys_policy>
         <sys_scope display_value="NextForm">d3a2faa487971110e942a9773cbb3537</sys_scope>
         <sys_update_name>sys_script_include_267191698793d110e942a9773cbb356b</sys_update_name>
         <sys_updated_by>admin</sys_updated_by>
-        <sys_updated_on>2026-05-22 21:43:09</sys_updated_on>
+        <sys_updated_on>2026-05-26 13:41:36</sys_updated_on>
     </sys_script_include>
 </record_update>
