@@ -70,11 +70,11 @@ function handler({
         api.setState('canGoPrevious', currentScreenNumber !== 1);
         api.setState('canGoFirst', currentScreenNumber !== 1);
         api.setState('canGoIndex', screenCount > 1);
-        api.setState('canProcess', nf.canProcess({
+        /*api.setState('canProcess', nf.canProcess({
             currentScreenNumber: api.state.currentScreenNumber,
             screenCount: api.state.screenCount,
             isProcessed: api.state.isProcessed
-        }, vr));
+        }, vr));*///no values would have changed yet, thus canProcess makes no sense
         api.setState('canReset', false);
 
         api.emit('CTRL_NEXTFORM#LOADING_COMPLETED');
@@ -87,14 +87,14 @@ function handler({
         <sys_created_by>dylan.lindgren</sys_created_by>
         <sys_created_on>2022-11-21 07:48:35</sys_created_on>
         <sys_id>ae52562d8757d110e942a9773cbb355a</sys_id>
-        <sys_mod_count>22</sys_mod_count>
+        <sys_mod_count>23</sys_mod_count>
         <sys_name>Handle NextForm Object Load</sys_name>
         <sys_package display_value="NextForm" source="x_snc_nf">d3a2faa487971110e942a9773cbb3537</sys_package>
         <sys_policy/>
         <sys_scope display_value="NextForm">d3a2faa487971110e942a9773cbb3537</sys_scope>
         <sys_update_name>sys_ux_client_script_ae52562d8757d110e942a9773cbb355a</sys_update_name>
         <sys_updated_by>admin</sys_updated_by>
-        <sys_updated_on>2026-05-21 23:14:41</sys_updated_on>
+        <sys_updated_on>2026-05-27 02:48:22</sys_updated_on>
         <target>macroponent</target>
         <type>default</type>
     </sys_ux_client_script>
