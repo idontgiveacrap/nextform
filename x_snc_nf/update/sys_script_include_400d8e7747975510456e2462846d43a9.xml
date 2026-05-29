@@ -401,10 +401,30 @@ NextField.prototype = {
     },
 
     _buildChoice: function() {
+        const choices = this._getOption('choices');
+        let normalizedChoices = Array.isArray(choices) ? [...choices] : [];
+
+        if (!this._getOption('mandatory')) {
+            const noneOption = {
+                value: '',
+                displayValue: '--None--'
+            };
+
+            const noneIndex = normalizedChoices.findIndex(
+                v => v.value === '' || v.displayValue === '--None--'
+            );
+
+            if (noneIndex === -1) {
+                normalizedChoices.push(noneOption);
+            } else {
+                normalizedChoices[noneIndex] = noneOption;
+            }
+        }
+
         return this._buildFieldWithCommon({
-            "choices": this.options.choices,
-            "type": "choice",
-            "internalType": "string" ///was integer, validate
+            choices: normalizedChoices,
+            type: "choice",
+            internalType: "string"
         });
     },
 
@@ -707,20 +727,20 @@ simple_name_values ******
                 o.minLength = nl;
             }
         }
-        o.mandatory = validationRule.mandatory === true || (validationRule.mandatory+'') === 'true';
+        o.mandatory = validationRule.mandatory === true || (validationRule.mandatory + '') === 'true';
         if (validationRule.type) {
             o.type = String(validationRule.type).toLowerCase();
         }
         if (typeof validationRule.regex === 'string' && validationRule.regex.length) {
             //o.regex = validationRule.regex;
-			if (gs.nil(this.fieldData.fieldRegex)) {
-				this.fieldData.fieldRegex = [{
-                "pattern": validationRule.regex,
-                "placeholder": "",
-                "guidanceText": "Value does not match required pattern",
-                "type": "suggestion"
-            }];
-			}
+            if (gs.nil(this.fieldData.fieldRegex)) {
+                this.fieldData.fieldRegex = [{
+                    "pattern": validationRule.regex,
+                    "placeholder": "",
+                    "guidanceText": "Value does not match required pattern",
+                    "type": "suggestion"
+                }];
+            }
         }
         this.options.nfValidation = o;
     },
@@ -744,8 +764,8 @@ simple_name_values ******
             "fieldLayout": this._getOption("fieldLayout", {
                 "layout": this._getOption("layout", "vertical")
             }),
-			"fieldRegex": this._getOption('fieldRegex', []), ///need to integrate and test more fully. use regex from nfValidation
-			/*[
+            "fieldRegex": this._getOption('fieldRegex', []), ///need to integrate and test more fully. use regex from nfValidation
+            /*[
             {
                 "pattern": "^[0-5]*$",
                 "placeholder": "test",
@@ -795,13 +815,13 @@ simple_name_values ******
         <sys_created_by>dylan.lindgren</sys_created_by>
         <sys_created_on>2022-11-28 07:11:54</sys_created_on>
         <sys_id>400d8e7747975510456e2462846d43a9</sys_id>
-        <sys_mod_count>86</sys_mod_count>
+        <sys_mod_count>87</sys_mod_count>
         <sys_name>NextField</sys_name>
         <sys_package display_value="NextForm" source="x_snc_nf">d3a2faa487971110e942a9773cbb3537</sys_package>
         <sys_policy>read</sys_policy>
         <sys_scope display_value="NextForm">d3a2faa487971110e942a9773cbb3537</sys_scope>
         <sys_update_name>sys_script_include_400d8e7747975510456e2462846d43a9</sys_update_name>
         <sys_updated_by>admin</sys_updated_by>
-        <sys_updated_on>2026-05-20 20:55:34</sys_updated_on>
+        <sys_updated_on>2026-05-29 19:08:07</sys_updated_on>
     </sys_script_include>
 </record_update>
