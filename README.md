@@ -90,6 +90,7 @@ Optional. An object with field properties. Common options:
 | `useReferenceQualifier` | `reference` | Qualifier mode (for example `'simple'`) |
 | `currencyCodes` | `currency` | Allowed currency codes |
 | `nfValidation` | Data fields | Client-side validation rules (see [nfValidation](#nfvalidation) below) |
+| `uiPolicy` | Data fields | Equivalent to a UI policy action
 
 When the same property appears in both `options` and `options.nfValidation`, **`nfValidation` wins** for `maxLength`, `minLength`, `readonly`, and `mandatory`.
 
@@ -156,6 +157,34 @@ Validation behavior by type (when `nfValidation.type` is set, or inferred from t
 - **choice**: value must appear in the field's `choices` list
 
 Regex matching on the client is handled by the Form component's built-in `fieldRegex` evaluation, not by a separate `nfValidation.regex` check.
+
+### uiPolicy
+ {
+        earnedIncomeSource: [{
+            encodedQuery: "incomeGroup=EI",
+            effects: {
+                visible: true,
+                mandatory: true
+            },
+            elseEffects: {
+                visible: false,
+                mandatory: false,
+                clearValue: true
+            }
+        }],
+        unEarnedIncomeSource: [{
+            encodedQuery: "incomeGroup=UI",
+            effects: {
+                visible: true,
+                mandatory: true
+            },
+            elseEffects: {
+                visible: false,
+                mandatory: false,
+                clearValue: true
+            }
+        }]
+    };
 
 ### Choice lists
 
