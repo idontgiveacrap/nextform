@@ -1,0 +1,385 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ux_client_script_include">
+    <sys_ux_client_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <api_name>x_snc_nf.FieldUiPolicy</api_name>
+        <includes/>
+        <name>FieldUiPolicy</name>
+        <required_translations>[]</required_translations>
+        <script><![CDATA[function include() {
+    const clauseEvaluatorsByQuery = Object.create(null);
+
+    function applyUiPolicy(fields) {
+        const out = {};
+        const keys = Object.keys(fields || {});
+
+        keys.forEach((name) => {
+            const currentField = fields[name] || {};
+
+            let nextField = {
+                ...currentField
+            };
+
+            const policies = getPoliciesForField(
+                name,
+                currentField
+            );
+
+            for (const policy of policies) {
+                const matches = evaluatePolicyCondition(
+                    fields,
+                    policy
+                );
+
+                const effects = matches ?
+                    (policy.effects || {}) :
+                    (policy.elseEffects || {});
+
+                nextField = applyEffects(
+                    nextField,
+                    effects
+                );
+
+                // Hidden wins.
+                if (nextField.visible === false) {
+                    break;
+                }
+            }
+
+            out[name] = finalizeField(nextField);
+        });
+
+        return out;
+    }
+
+    function getPoliciesForField(name, field) {
+        const inlinePolicies =
+            Array.isArray(field?.uiPolicy) ?
+            field.uiPolicy :
+            [];
+
+        if (inlinePolicies.length > 0) {
+            return inlinePolicies;
+        }
+
+        return [];
+    }
+
+    function evaluatePolicyCondition(fields, policy) {
+        const encodedQuery =
+            typeof policy?.encodedQuery === "string" ?
+            policy.encodedQuery.trim() :
+            "";
+
+        if (encodedQuery.length < 1) {
+            return false;
+        }
+
+        return evaluateEncodedQuery(
+            fields,
+            encodedQuery
+        );
+    }
+function evaluateEncodedQuery(fields, encodedQuery) {
+    const groups = getClauseEvaluators(encodedQuery);
+
+    if (groups.length < 1) {
+        return false;
+    }
+
+    return groups.some((group) =>
+        group.every((evaluate) => evaluate(fields))
+    );
+}
+
+function getClauseEvaluators(encodedQuery) {
+    if (
+        Object.prototype.hasOwnProperty.call(
+            clauseEvaluatorsByQuery,
+            encodedQuery
+        )
+    ) {
+        return clauseEvaluatorsByQuery[encodedQuery];
+    }
+
+    const groups = [];
+    let currentGroup = [];
+
+    const tokens = encodedQuery
+        .split("^")
+        .map((token) => token.trim())
+        .filter(Boolean);
+
+    for (let token of tokens) {
+        if (token === "NQ") {
+            if (currentGroup.length > 0) {
+                groups.push(currentGroup);
+                currentGroup = [];
+            }
+            continue;
+        }
+
+        if (token.startsWith("OR")) {
+            if (currentGroup.length > 0) {
+                groups.push(currentGroup);
+            }
+
+            currentGroup = [];
+
+            token = token.substring(2).trim();
+
+            if (token.length > 0) {
+                currentGroup.push(
+                    compileEncodedClause(token)
+                );
+            }
+
+            continue;
+        }
+
+        currentGroup.push(
+            compileEncodedClause(token)
+        );
+    }
+
+    if (currentGroup.length > 0) {
+        groups.push(currentGroup);
+    }
+
+    clauseEvaluatorsByQuery[encodedQuery] = groups;
+
+    return groups;
+}
+
+    function compileEncodedClause(clause) {
+        let m = clause.match(
+            /^([^!=<>@]+)IS NOT EMPTY$/
+        );
+
+        if (m) {
+            const fieldName = m[1].trim();
+
+            return (fields) =>
+                getFieldValue(
+                    fields,
+                    fieldName
+                ).trim() !== "";
+        }
+
+        m = clause.match(
+            /^([^!=<>@]+)IS EMPTY$/
+        );
+
+        if (m) {
+            const fieldName = m[1].trim();
+
+            return (fields) =>
+                getFieldValue(
+                    fields,
+                    fieldName
+                ).trim() === "";
+        }
+
+        m = clause.match(
+            /^(.+?)NOT IN(.+)$/
+        );
+
+        if (m) {
+            const fieldName = m[1].trim();
+
+            const options = m[2]
+                .split(",")
+                .map((v) => v.trim());
+
+            return (fields) =>
+                !options.includes(
+                    getFieldValue(
+                        fields,
+                        fieldName
+                    )
+                );
+        }
+
+        m = clause.match(
+            /^(.+?)IN(.+)$/
+        );
+
+        if (m) {
+            const fieldName = m[1].trim();
+
+            const options = m[2]
+                .split(",")
+                .map((v) => v.trim());
+
+            return (fields) =>
+                options.includes(
+                    getFieldValue(
+                        fields,
+                        fieldName
+                    )
+                );
+        }
+
+        m = clause.match(
+            /^([^!=<>@]+)!=(.*)$/
+        );
+
+        if (m) {
+            const fieldName = m[1].trim();
+            const expected = m[2].trim();
+
+            return (fields) =>
+                getFieldValue(
+                    fields,
+                    fieldName
+                ) !== expected;
+        }
+
+        m = clause.match(
+            /^([^!=<>@]+)=(.*)$/
+        );
+
+        if (m) {
+            const fieldName = m[1].trim();
+            const expected = m[2].trim();
+
+            return (fields) =>
+                getFieldValue(
+                    fields,
+                    fieldName
+                ) === expected;
+        }
+
+        return () => false;
+    }
+
+    function getFieldValue(fields, name) {
+        const source = fields?.[name] || {};
+        const actual = source.value;
+
+        return actual == null ?
+            "" :
+            String(actual);
+    }
+
+    function applyEffects(field, effects) {
+        const next = {
+            ...field
+        };
+
+        if (
+            !effects ||
+            typeof effects !== "object"
+        ) {
+            return next;
+        }
+
+        if (
+            Object.prototype.hasOwnProperty.call(
+                effects,
+                "visible"
+            )
+        ) {
+            next.visible =
+                effects.visible === true;
+        }
+
+        if (
+            Object.prototype.hasOwnProperty.call(
+                effects,
+                "mandatory"
+            )
+        ) {
+            next.mandatory =
+                effects.mandatory === true;
+        }
+
+        if (
+            Object.prototype.hasOwnProperty.call(
+                effects,
+                "readonly"
+            )
+        ) {
+            const isReadonly =
+                effects.readonly === true;
+
+            next.readonly = isReadonly;
+            next.sys_readonly = isReadonly;
+        }
+
+        if (effects.clearValue === true) {
+            next.value = "";
+            next.displayValue = "";
+        }
+
+        if (
+            Object.prototype.hasOwnProperty.call(
+                effects,
+                "setValue"
+            )
+        ) {
+            const setValue =
+                effects.setValue;
+
+            next.value = setValue;
+            next.displayValue =
+                setValue == null ?
+                "" :
+                String(setValue);
+        }
+
+        return next;
+    }
+
+    function finalizeField(field) {
+        const next = {
+            ...field
+        };
+
+        if (next.visible === false) {
+            next.mandatory = false;
+
+            if (
+                Array.isArray(next.messages)
+            ) {
+                next.messages =
+                    next.messages.filter(
+                        (msg) =>
+                        !msg?.custom
+                    );
+            }
+        }
+
+        const isReadonly =
+            next.readonly === true ||
+            next.sys_readonly === true;
+
+        next.canWrite =
+            next.canWrite !== false &&
+            !isReadonly;
+
+        next.canCreate =
+            next.canCreate !== false &&
+            !isReadonly;
+
+        return next;
+    }
+
+    return {
+        applyUiPolicy
+    };
+}]]></script>
+        <script_api_version>2.0.0</script_api_version>
+        <sys_class_name>sys_ux_client_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2026-06-05 23:38:53</sys_created_on>
+        <sys_id>70819f2d475987d07d5f35ca116d436e</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>FieldUiPolicy</sys_name>
+        <sys_package display_value="NextForm" source="x_snc_nf">d3a2faa487971110e942a9773cbb3537</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="NextForm">d3a2faa487971110e942a9773cbb3537</sys_scope>
+        <sys_update_name>sys_ux_client_script_include_70819f2d475987d07d5f35ca116d436e</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2026-06-06 00:16:11</sys_updated_on>
+    </sys_ux_client_script_include>
+</record_update>

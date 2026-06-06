@@ -4,7 +4,7 @@
         <operation>execute</operation>
         <rca_type>real_rca</rca_type>
         <source>48074cbec37fb21086f39f3ed401318e</source>
-        <source_scope display_value="Evidence verification">00979d3bc38f765086f39f3ed4013192</source_scope>
+        <source_scope/>
         <source_table>x_snc_nf_generator</source_table>
         <source_type>10</source_type>
         <status>2</status>

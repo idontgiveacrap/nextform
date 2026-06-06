@@ -3,7 +3,7 @@
         <sys_ui_list_element action="INSERT_OR_UPDATE">
             <average_value>false</average_value>
             <element>name</element>
-            <list_id display_value="x_snc_nf_processor" element="NULL" name="x_snc_nf_processor" parent="NULL" relationship="NULL" sys_domain="global" view="ad418062482132108bb2a3a8cef79779">62cb44f6c3bfb21086f39f3ed40131ea</list_id>
+            <list_id display_value="x_snc_nf_processor" element="NULL" name="x_snc_nf_processor" parent="NULL" relationship="NULL" sys_domain="global" view="d0c3d060f50003100a22c0b3dfa1515a">62cb44f6c3bfb21086f39f3ed40131ea</list_id>
             <max_value>false</max_value>
             <min_value>false</min_value>
             <position>0</position>
@@ -40,7 +40,7 @@
             <sys_updated_by>admin</sys_updated_by>
             <sys_updated_on>2026-03-26 16:51:24</sys_updated_on>
             <sys_user/>
-            <view display_value="Reference List" name="sys_ref_list">ad418062482132108bb2a3a8cef79779</view>
+            <view display_value="Reference List" name="sys_ref_list">d0c3d060f50003100a22c0b3dfa1515a</view>
             <view_name/>
         </sys_ui_list>
     </sys_ui_list>

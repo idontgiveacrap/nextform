@@ -17,6 +17,7 @@
         <menu display_value="NextForm">6df685ad8753d110e942a9773cbb3576</menu>
         <name>NextForm</name>
         <package_json/>
+        <package_resolver_version/>
         <private>false</private>
         <restrict_table_access>false</restrict_table_access>
         <runtime_access_tracking>permissive</runtime_access_tracking>

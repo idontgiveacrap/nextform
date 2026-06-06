@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ux_component_preset">
     <sys_ux_component_preset action="INSERT_OR_UPDATE">
+        <allow_extended_component>false</allow_extended_component>
         <component display_value="Form">cdf8d604a3fda59e69ccd6dd407263d6</component>
         <controller display_value="NextForm">bc6738a18753d110e942a9773cbb3583</controller>
         <controller_dependencies/>
